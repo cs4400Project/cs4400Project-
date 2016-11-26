@@ -101,44 +101,50 @@ class cs4400Project:
 
 
     def loginToWelcome(self):
+        #If the login is successful, then the login window will close
+        #And the welcome screen will appear
         self.rootwin.withdraw()
         print("at welcome")
 
     def registerUser(self):
+        #Register a new user that has a unique email and password
+        #If successful, then bring them to the welcome page
         try:
+            #connect to database
             db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
                                  passwd = "2KZtbzKa", db = "cs4400_Team_5")
             print("connected")
             cursor = db.cursor()
-            print("hm")
             username = self.regUsernameEntry.get().strip()
-            print(username)
             email = self.regEmailEntry.get().strip()
-            print(email)
             password = self.regPasswordEntry.get().strip()
-            print(password)
             confirmPassword = self.regConfirmPasswordEntry.get().strip()
-            print(confirmPassword)
-            print("extracted data")
+
+            #Check all the cases
+            #1.none of it can be blank
+            #2.must be a gatech email
+            #3.unique username and email
+            #4.passwords must match
             if(len(password) == 0 or len(username) == 0 or len(email) == 0):
                 print("none of the fields above can be empty")
             elif(email[email.index("@")+1:] != "gatech.edu"):
                 print("must have a gatech email")
             else:
-                databaseUser = cursor.execute("SELECT Username FROM USER WHERE Username = %s",(username,)).fetchall()
-                print(len(databaseUser))
-                print("passed the beginning")
+                cursor.execute("SELECT Username FROM USER WHERE Username = %s",(username,))
+                databaseUser = cursor.fetchall()
+                cursor.execute("SELECT Email FROM USER WHERE Email = %s",(email,))
+                databaseEmail = cursor.fetchall()
                 if(password != confirmPassword):
                     print("passwords must match")
                 elif len(databaseUser) != 0:
                     print("username already taken")
-                elif cursor.execute("SELECT * FROM User WHERE Email = %s", (email,)) != 0:
+                elif len(databaseEmail) != 0:
                     print("email already taken")
                 else:
-                    print("made it here")
-                    statement = "INSERT INTO User (Username, Password, Email, UserType) values (%s, %s, %s)"
+                    #If everything works then we insert the new user into the database
+                    statement = "INSERT INTO USER (Username, Password, Email, UserType) values (%s, %s, %s, %s)"
                     data = (username, password, email, "User")
-                    cursor.exectue(statement,data)
+                    cursor.execute(statement,data)
                     db.commit()
                     print("You have registered a user")
                     self.regToWelcome()
@@ -148,10 +154,14 @@ class cs4400Project:
             print("could not connect to database")
         
     def regToWelcome(self):
+        #If the register is successful, then the register window will close
+        #And the welcome screen will appear
         self.regWin.withdraw()
         print("at welcome")
 
     def backToLogin(self):
+        #If they are on the register screen and want to go back to the login screen
+        #Then they click the button, the reg screen will close and the login will appear
         self.regWin.withdraw()
         self.rootwin.iconify()
 
