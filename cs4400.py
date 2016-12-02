@@ -377,6 +377,7 @@ class cs4400Project:
     def logout(self):
         self.chooseFunctionalityWin.withdraw()
         self.rootwin.iconify()
+        print("logged out")
 
     def addProject(self):
 
