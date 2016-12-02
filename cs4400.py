@@ -144,13 +144,13 @@ class cs4400Project:
         Label(self.regFrame, text = "Password:",background="gray").grid(row = 2, column = 0)
         Label(self.regFrame, text = "Confirm Password:",background="gray").grid(row = 3, column = 0)
         self.regUsernameEntry = Entry(self.regFrame, width = 30)
-        self.regUsernameEntry.grid(row = 0, column = 1,columnspan=2)
+        self.regUsernameEntry.grid(row = 0, column = 1,columnspan=2,pady=6)
         self.regEmailEntry = Entry(self.regFrame, width = 30)
-        self.regEmailEntry.grid(row = 1, column = 1,columnspan=2)
+        self.regEmailEntry.grid(row = 1, column = 1,columnspan=2,pady=6)
         self.regPasswordEntry = Entry(self.regFrame, width = 30)
-        self.regPasswordEntry.grid(row = 2, column = 1,columnspan=2)
+        self.regPasswordEntry.grid(row = 2, column = 1,columnspan=2,pady=6)
         self.regConfirmPasswordEntry = Entry(self.regFrame, width = 30)
-        self.regConfirmPasswordEntry.grid(row = 3, column = 1,columnspan=2)
+        self.regConfirmPasswordEntry.grid(row = 3, column = 1,columnspan=2,pady=6)
 
         #Buttons
         #Register submits the information (if correct) and straight to the welcome page
@@ -270,7 +270,7 @@ class cs4400Project:
         self.piceditFrame.pack()
 
         #picc SLS
-        editurl = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        editurl = "http://imageshack.com/a/img923/4657/0CZ7BM.gif"
         editresponse = urllib.request.urlopen(editurl)
         myeditPicture = editresponse.read()
         import base64
@@ -323,7 +323,7 @@ class cs4400Project:
             else:
                 self.departmentVar.set(self.majorDict[currentUser[0][0]])
             majorOptionMenu = OptionMenu(self.editFrame, self.majorVariable, *majorList,command = self.changeDepartment)
-            majorOptionMenu.grid(row = 0, column = 1)
+            majorOptionMenu.grid(row = 0, column = 1,sticky=W,pady=6)
 
             #same concept with year for old v new users
             Label(self.editFrame, text = "Year:",background="gray").grid(row = 1, column = 0)
@@ -333,17 +333,17 @@ class cs4400Project:
             else:
                 yearVariable.set(currentUser[0][1])
             yearOptionMenu = OptionMenu(self.editFrame, yearVariable, "Freshman", "Sophomore", "Junior", "Senior", command = self.changeYear)
-            yearOptionMenu.grid(row = 1, column = 1)
+            yearOptionMenu.grid(row = 1, column = 1,sticky=W,pady=6)
 
             #once things are selected the user is no longer new
             self.newUser = False
 
             Label(self.editFrame, text = "Department:",background="gray").grid(row = 2, column = 0)
             self.departmentLabel = Label(self.editFrame, text = self.departmentVar.get())
-            self.departmentLabel.grid(row = 2, column = 1)
+            self.departmentLabel.grid(row = 2, column = 1,sticky=W,pady=6)
 
-            self.editToWelcomeButton = Button(self.editFrame, text = "Back", command = self.editToWelcome)
-            self.editToWelcomeButton.grid(row=3, column = 0)
+            self.editToWelcomeButton = Button(self.editFrame, text = "Back", command = self.editToWelcome,width=9)
+            self.editToWelcomeButton.grid(row=3, column = 1, sticky=E,pady=10)
             
             cursor.close()
             db.close()
@@ -366,12 +366,13 @@ class cs4400Project:
             cursor.close()
             db.close()
             
-            self.departmentLabel.grid_forget()
+            ##self.departmentLabel.grid_forget()
             self.departmentVar.set("")
             department = self.majorDict[major]
             self.departmentVar.set(department)
-            self.departmentLabel = Label(self.editFrame, text = self.departmentVar.get())
-            self.departmentLabel.grid(row = 2, column = 1)
+            self.departmentLabel.config(text = department)
+            ##self.departmentLabel = Label(self.editFrame, text = self.departmentVar.get())
+            ##self.departmentLabel.grid(row = 2, column = 1)
         except:
             print("cannot connect to database")
 
@@ -432,15 +433,15 @@ class cs4400Project:
         self.chooseFunctionalityFrame.pack()
 
         self.viewAppButton = Button(self.chooseFunctionalityFrame, text = "View Application", command = self.CFToViewApp)
-        self.viewAppButton.grid(row = 0, column = 0, pady=5)
+        self.viewAppButton.grid(row = 0, column = 0, pady=5, sticky =N+S+E+W)
         self.viewPopProReportButton = Button(self.chooseFunctionalityFrame, text = "View Popular Project Report", command = self.CFToViewPopPro)
-        self.viewPopProReportButton.grid(row = 2, column = 0, pady=5)
+        self.viewPopProReportButton.grid(row = 2, column = 0, pady=5, sticky =N+S+E+W)
         self.viewAppReportButton = Button(self.chooseFunctionalityFrame, text = "View Application Report", command = self.CFToAppReport)
-        self.viewAppReportButton.grid(row = 4, column = 0,pady=5)
+        self.viewAppReportButton.grid(row = 4, column = 0,pady=5, sticky =N+S+E+W)
         self.addAProjectButton = Button(self.chooseFunctionalityFrame, text = "Add A Project", command = self.CFToAddPro)
-        self.addAProjectButton.grid(row = 6, column = 0, pady=5)
+        self.addAProjectButton.grid(row = 6, column = 0, pady=5, sticky =N+S+E+W)
         self.addACourseButton = Button(self.chooseFunctionalityFrame, text = "Add A Course", command = self.CFToAddCourse)
-        self.addACourseButton.grid(row = 8, column = 0,pady=5)
+        self.addACourseButton.grid(row = 8, column = 0,pady=5, sticky =N+S+E+W)
 
         self.logoutButton = Button(self.chooseFunctionalityFrame, text = "Logout", command = self.logout)
         self.logoutButton.grid(row = 9, column = 0)
@@ -473,21 +474,38 @@ class cs4400Project:
         #Has entry boxes for some, drop down menus for others
         self.addProjectWin = Toplevel()
         self.addProjectWin.title("Add Project")
-        self.addProjectFrame = Frame(self.addProjectWin)
+        self.addProjectWin.configure(background= "gray")
+        
+        self.addprojectpic = Frame(self.addProjectWin, background="gray")
+        self.addprojectpic.pack()
+
+        #picc SLS
+        projecturl = "http://imageshack.com/a/img923/492/NJ18VG.gif" 
+        projectresponse = urllib.request.urlopen(projecturl)
+        myprojectPicture = projectresponse.read()
+        import base64
+        projectb64_data = base64.encodebytes(myprojectPicture)
+        self.projectphoto = PhotoImage(data=projectb64_data)
+        projectl = Label(self.addprojectpic, image = self.projectphoto)
+        projectl.grid(row= 0, column = 0, sticky= E)
+        #picc SLS
+        
+        
+        self.addProjectFrame = Frame(self.addProjectWin,background="gray")
         self.addProjectFrame.pack()
 
-        Label(self.addProjectFrame, text = "Project Name").grid(row = 0, column= 0)
+        Label(self.addProjectFrame, text = "Project Name:",background="gray").grid(row = 0, column= 0)
         self.projectNameEntry = Entry(self.addProjectFrame)
-        self.projectNameEntry.grid(row = 0, column = 1)
-        Label(self.addProjectFrame, text = "Advisor").grid(row = 1, column = 0)
+        self.projectNameEntry.grid(row = 0, column = 1,pady=6)
+        Label(self.addProjectFrame, text = "Advisor:",background="gray").grid(row = 1, column = 0)
         self.advisorNameEntry = Entry(self.addProjectFrame)
-        self.advisorNameEntry.grid(row = 1, column = 1)
-        Label(self.addProjectFrame, text = "Advisor Email").grid(row = 2, column = 0)
+        self.advisorNameEntry.grid(row = 1, column = 1,pady=6)
+        Label(self.addProjectFrame, text = "Advisor Email:",background="gray").grid(row = 2, column = 0)
         self.advisorEmailEntry = Entry(self.addProjectFrame)
-        self.advisorEmailEntry.grid(row = 2, column = 1)
-        Label(self.addProjectFrame, text = "Descipriton").grid(row = 3, column = 0)
-        self.projectDescriptionEntry = Entry(self.addProjectFrame)
-        self.projectDescriptionEntry.grid(row = 3, column = 1)
+        self.advisorEmailEntry.grid(row = 2, column = 1,pady=6)
+        Label(self.addProjectFrame, text = "Descipriton:",background="gray").grid(row = 3, column = 0)
+        self.projectDescriptionText = Text(self.addProjectFrame,width =35, height=8)
+        self.projectDescriptionText.grid(row = 3, column = 1,pady=6)
 
         try:
         #connect to database
@@ -501,59 +519,59 @@ class cs4400Project:
             categoryList = []
             for category in aList:
                 categoryList.append(category[0])
-            Label(self.addProjectFrame, text = "Category").grid(row = 4, column= 0)
+            Label(self.addProjectFrame, text = "Category:",background="gray").grid(row = 4, column= 0)
             self.categorySelection = StringVar()
             self.categorySelection.set(categoryList[0])
             self.categoryOption = OptionMenu(self.addProjectFrame, self.categorySelection, *categoryList)
-            self.categoryOption.grid(row = 4, column = 1)
+            self.categoryOption.grid(row = 4, column = 1,pady=6)
 
             cursor.execute("SELECT * FROM DESIGNATION;")
             aList = cursor.fetchall()
             designationList = []
             for designation in aList:
                 designationList.append(designation[0])
-            Label(self.addProjectFrame, text = "Designation").grid(row = 5, column = 0)
+            Label(self.addProjectFrame, text = "Designation:",background="gray").grid(row = 5, column = 0)
             self.designationVar = StringVar()
             self.designationVar.set(designationList[0])
             self.designationOption = OptionMenu(self.addProjectFrame, self.designationVar, *designationList)
-            self.designationOption.grid(row = 5, column = 1)
+            self.designationOption.grid(row = 5, column = 1,pady=6)
 
-            Label(self.addProjectFrame, text = "Estimated Number of Students").grid(row = 6, column = 0)
+            Label(self.addProjectFrame, text = "Estimated Number of Students:",background="gray").grid(row = 6, column = 0)
             self.estNumStudentsEntry = Entry(self.addProjectFrame)
-            self.estNumStudentsEntry.grid(row = 6, column = 1)
+            self.estNumStudentsEntry.grid(row = 6, column = 1,pady=6)
 
             cursor.execute("SELECT * FROM MAJOR")
             majorTuple = cursor.fetchall()
             majorList = []
             for major in majorTuple:
                 majorList.append(major[0])
-            Label(self.addProjectFrame, text = "Major Requirement").grid(row = 7, column = 0)
+            Label(self.addProjectFrame, text = "Major Requirement:",background="gray").grid(row = 7, column = 0)
             majorVar = StringVar()
             majorVar.set(majorList[0])
             self.projectMajorOption = OptionMenu(self.addProjectFrame, majorVar, *majorList)
-            self.projectMajorOption.grid(row = 7, column = 1)
+            self.projectMajorOption.grid(row = 7, column = 1,pady=6)
 
             yearVar = StringVar()
             yearVar.set("Freshman")
-            Label(self.addProjectFrame, text = "Year Requirement").grid(row = 8, column = 0)
+            Label(self.addProjectFrame, text = "Year Requirement:",background="gray").grid(row = 8, column = 0)
             self.projectYearOption = OptionMenu(self.addProjectFrame, yearVar, "Freshman","Sophomore", "Junior","Senior")
-            self.projectYearOption.grid(row = 8, column = 1)
+            self.projectYearOption.grid(row = 8, column = 1,pady=6)
 
             cursor.execute("SELECT * FROM DEPARTMENT")
             departmentTuple = cursor.fetchall()
             departmentList = []
             for department in departmentTuple:
                 departmentList.append(department[0])
-            Label(self.addProjectFrame, text = "Department Requirement").grid(row = 9, column = 0)
+            Label(self.addProjectFrame, text = "Department Requirement:",background="gray").grid(row = 9, column = 0)
             departmentVar = StringVar()
             departmentVar.set(departmentList[0])
             self.projectDepartmentOption = OptionMenu(self.addProjectFrame, departmentVar, *departmentList)
-            self.projectDepartmentOption.grid(row = 9, column = 1)
+            self.projectDepartmentOption.grid(row = 9, column = 1,pady=6)
     
-            self.addProjectBackButton = Button(self.addProjectFrame, text = "Back")
-            self.addProjectBackButton.grid(row = 10, column = 0)
-            self.addProjectSubmitButton = Button(self.addProjectFrame, text = "Submit", command = self.submitProject)
-            self.addProjectSubmitButton.grid(row = 11, column = 0)
+            self.addProjectBackButton = Button(self.addProjectFrame, text = "Back",width=15)
+            self.addProjectBackButton.grid(row = 10, column = 0,sticky=W)
+            self.addProjectSubmitButton = Button(self.addProjectFrame, text = "Submit", command = self.submitProject,width=15)
+            self.addProjectSubmitButton.grid(row = 10, column = 1,sticky=E)
 
             cursor.close()
             db.close()
