@@ -43,7 +43,7 @@ class cs4400Project:
             cursor = db.cursor()
             username = self.usernameEntry.get().strip()
             password = self.passwordEntry.get().strip()
-            cursor.execute("SELECT Username,Password FROM USER WHERE Username = %s", (username,))
+            cursor.execute("SELECT Username,Password,UserType FROM USER WHERE Username = %s", (username,))
 
             #try to see if anything was fetched from the query, if it is empty
             #then the username did not match, if not empty then we check the password
@@ -57,7 +57,15 @@ class cs4400Project:
                 if (realPassword != password):
                     print("wrong password")
                 else:
-                    self.loginToWelcome()
+                    
+                    if(aList[0][2] == "Admin"):
+                        self.loginToFunctionality()
+                    else:
+                        self.newUser = False
+                        self.loginToWelcome()
+                    print("login")
+                    self.currentUser = realUsername
+
             else:
                 print("wrong username")
             cursor.close()
@@ -102,6 +110,7 @@ class cs4400Project:
         #If the login is successful, then the login window will close
         #And the welcome screen will appear
         self.rootwin.withdraw()
+        self.welcomeScreen()
         print("at welcome")
 
     def registerUser(self):
@@ -145,17 +154,21 @@ class cs4400Project:
                     cursor.execute(statement,data)
                     db.commit()
                     print("You have registered a user")
-                    self.regToWelcome()
+                    self.newUser = True
+                    self.currentUser = username
+                    self.regToEditProfile()
             cursor.close()
             db.close()
         except:
             print("could not connect to database")
         
-    def regToWelcome(self):
+    def regToEditProfile(self):
         #If the register is successful, then the register window will close
         #And the welcome screen will appear
+        print("register user function running")
         self.regWin.withdraw()
-        print("at welcome")
+        self.toEditProfile()
+        print("at edit profile")
 
     def backToLogin(self):
         #If they are on the register screen and want to go back to the login screen
@@ -163,8 +176,275 @@ class cs4400Project:
         self.regWin.withdraw()
         self.rootwin.iconify()
 
-    
+    def welcomeScreen(self):
+        print("at welcome screen hahaha")
+        #GUI for the welcome screen
+        self.welcomeWin = Toplevel()
+        print("made window")
+        self.welcomeWin.title("Welcome")
+        self.welcomeFrame = Frame(self.welcomeWin)
+        self.welcomeFrame.pack()
+        print("made Frame")
 
+        #Me Button
+        self.meButton = Button(self.welcomeFrame, text = "Me", command = self.meWindow)
+        self.meButton.grid(row = 0, column = 0)
+
+    def meWindow(self):
+        self.welcomeWin.withdraw()
+        self.meWin = Toplevel()
+        self.meWin.title("Me")
+        self.meFrame = Frame(self.meWin)
+        self.meFrame.pack()
+
+        self.editProfileButton = Button(self.meFrame, text = "Edit Profile", command = self.toEditProfile)
+        self.editProfileButton.grid(row = 0, column = 0)
+        self.myApplicationButton = Button(self.meFrame, text = "My Application")
+        self.myApplicationButton.grid(row = 1, column = 0)
+
+    def toEditProfile(self):
+        if(not self.newUser):
+            self.meWin.withdraw()
+        self.editWin = Toplevel()
+        self.editWin.title("Edit Profile")
+        self.editFrame = Frame(self.editWin)
+        self.editFrame.pack()
+        print("at edit profile")
+
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM MAJOR")
+            majorTuple = cursor.fetchall()
+            cursor.execute("SELECT Major,Year FROM USER WHERE Username = %s", (self.currentUser,))
+            currentUser = cursor.fetchall()
+            print(currentUser)
+            majorList = []
+            self.majorDict = {}
+            for major in majorTuple:
+                self.majorDict[major[0]] = major[1]
+                majorList.append(major[0])
+
+            Label(self.editFrame, text = "Major").grid(row = 0, column = 0)
+            self.majorVariable = StringVar()
+            if(self.newUser):
+                self.majorVariable.set(majorList[0])
+            else:
+                self.majorVariable.set(currentUser[0][0])
+            print("made the variable")
+            self.departmentVar = StringVar()
+            if(self.newUser):
+                self.departmentVar.set(self.majorDict[majorList[0]])
+            else:
+                self.departmentVar.set(self.majorDict[currentUser[0][0]])
+            majorOptionMenu = OptionMenu(self.editFrame, self.majorVariable, *majorList,command = self.changeDepartment)
+            majorOptionMenu.grid(row = 0, column = 1)
+            print("made the option menu")
+            
+            Label(self.editFrame, text = "Year").grid(row = 1, column = 0)
+            yearVariable = StringVar()
+            if(self.newUser):
+                yearVariable.set("Freshman")
+            else:
+                yearVariable.set(currentUser[0][1])
+            yearOptionMenu = OptionMenu(self.editFrame, yearVariable, "Freshman", "Sophomore", "Junior", "Senior", command = self.changeYear)
+            yearOptionMenu.grid(row = 1, column = 1)
+            self.newUser = False
+
+            Label(self.editFrame, text = "Department").grid(row = 2, column = 0)
+            self.departmentLabel = Label(self.editFrame, text = self.departmentVar.get())
+            self.departmentLabel.grid(row = 2, column = 1)
+
+            self.editToWelcomeButton = Button(self.editFrame, text = "Back", command = self.editToWelcome)
+            self.editToWelcomeButton.grid(row=3, column = 0)
+            
+            cursor.close()
+            db.close()
+        except:
+            print("could not connect to database")
+
+
+    def changeDepartment(self,major):
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+            cursor.execute("UPDATE USER SET Major = %s WHERE Username = %s", (major,self.currentUser))
+            db.commit()
+            cursor.close()
+            db.close()
+            
+            self.departmentLabel.grid_forget()
+            self.departmentVar.set("")
+            department = self.majorDict[major]
+            self.departmentVar.set(department)
+            self.departmentLabel = Label(self.editFrame, text = self.departmentVar.get())
+            self.departmentLabel.grid(row = 2, column = 1)
+        except:
+            print("cannot connect to database")
+
+    def changeYear(self, year):
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+            cursor.execute("UPDATE USER SET Year = %s WHERE Username = %s", (year, self.currentUser))
+            db.commit()
+            cursor.close()
+            db.close()
+        except:
+            print("cannot connect to database")
+
+    def editToWelcome(self):
+        self.editWin.withdraw()
+        self.welcomeScreen()
+
+
+
+
+
+
+
+    ###################################ADMIN#################################
+    def loginToFunctionality(self):
+        self.rootwin.withdraw()
+        self.chooseFunctionality()
+        
+    def chooseFunctionality(self):
+        self.chooseFunctionalityWin = Toplevel()
+        self.chooseFunctionalityWin.title("Choose Functionality")
+        self.chooseFunctionalityFrame = Frame(self.chooseFunctionalityWin)
+        self.chooseFunctionalityFrame.pack()
+
+        print("Frames made")
+
+        self.viewAppButton = Button(self.chooseFunctionalityFrame, text = "View Application", command = self.CFToViewApp)
+        self.viewAppButton.grid(row = 0, column = 0)
+        self.viewPopProReportButton = Button(self.chooseFunctionalityFrame, text = "View Popular Project Report", command = self.CFToViewPopPro)
+        self.viewPopProReportButton.grid(row = 1, column = 0)
+        self.viewAppReportButton = Button(self.chooseFunctionalityFrame, text = "View Application Report", command = self.CFToAppReport)
+        self.viewAppReportButton.grid(row = 2, column = 0)
+        self.addAProjectButton = Button(self.chooseFunctionalityFrame, text = "Add A Project", command = self.CFToAddPro)
+        self.addAProjectButton.grid(row = 3, column = 0)
+        self.addACourseButton = Button(self.chooseFunctionalityFrame, text = "Add A Course", command = self.CFToAddCourse)
+        self.addACourseButton.grid(row = 4, column = 0)
+
+    def CFToViewApp(self):
+        print("View App")
+
+    def CFToViewPopPro(self):
+        print("Popular Project")
+
+    def CFToAppReport(self):
+        print("Application Report")
+
+    def CFToAddPro(self):
+        self.chooseFunctionalityWin.withdraw()
+        self.addProject()
+
+    def CFToAddCourse(self):
+        print("Add Project")
+
+    def addProject(self):
+        self.addProjectWin = Toplevel()
+        self.addProjectWin.title("Add Project")
+        self.addProjectFrame = Frame(self.addProjectWin)
+        self.addProjectFrame.pack()
+
+        Label(self.addProjectFrame, text = "Project Name").grid(row = 0, column= 0)
+        self.projectNameEntry = Entry(self.addProjectFrame)
+        self.projectNameEntry.grid(row = 0, column = 1)
+        Label(self.addProjectFrame, text = "Advisor").grid(row = 1, column = 0)
+        self.advisorNameEntry = Entry(self.addProjectFrame)
+        self.advisorNameEntry.grid(row = 1, column = 1)
+        Label(self.addProjectFrame, text = "Advisor Email").grid(row = 2, column = 0)
+        self.advisorEmailEntry = Entry(self.addProjectFrame)
+        self.advisorEmailEntry.grid(row = 2, column = 1)
+        Label(self.addProjectFrame, text = "Descipriton").grid(row = 3, column = 0)
+        self.projectDescriptionEntry = Entry(self.addProjectFrame)
+        self.projectDescriptionEntry.grid(row = 3, column = 1)
+
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+
+            cursor.execute("SELECT * FROM CATEGORY;")
+            aList = cursor.fetchall()
+            categoryList = []
+            for category in aList:
+                categoryList.append(category[0])
+            Label(self.addProjectFrame, text = "Category").grid(row = 4, column= 0)
+            self.categorySelection = StringVar()
+            self.categorySelection.set(categoryList[0])
+            self.categoryOption = OptionMenu(self.addProjectFrame, self.categorySelection, *categoryList)
+            self.categoryOption.grid(row = 4, column = 1)
+
+            cursor.execute("SELECT * FROM DESIGNATION;")
+            aList = cursor.fetchall()
+            designationList = []
+            for designation in aList:
+                designationList.append(designation[0])
+            Label(self.addProjectFrame, text = "Designation").grid(row = 5, column = 0)
+            self.designationVar = StringVar()
+            self.designationVar.set(designationList[0])
+            self.designationOption = OptionMenu(self.addProjectFrame, self.designationVar, *designationList)
+            self.designationOption.grid(row = 5, column = 1)
+
+            Label(self.addProjectFrame, text = "Estimated Number of Students").grid(row = 6, column = 0)
+            self.estNumStudentsEntry = Entry(self.addProjectFrame)
+            self.estNumStudentsEntry.grid(row = 6, column = 1)
+
+            cursor.execute("SELECT * FROM MAJOR")
+            majorTuple = cursor.fetchall()
+            majorList = []
+            for major in majorTuple:
+                majorList.append(major[0])
+            Label(self.addProjectFrame, text = "Major Requirement").grid(row = 7, column = 0)
+            majorVar = StringVar()
+            majorVar.set(majorList[0])
+            self.projectMajorOption = OptionMenu(self.addProjectFrame, majorVar, *majorList)
+            self.projectMajorOption.grid(row = 7, column = 1)
+
+            yearVar = StringVar()
+            yearVar.set("Freshman")
+            Label(self.addProjectFrame, text = "Year Requirement").grid(row = 8, column = 0)
+            self.projectYearOption = OptionMenu(self.addProjectFrame, yearVar, "Freshman","Sophomore", "Junior","Senior")
+            self.projectYearOption.grid(row = 8, column = 1)
+
+            cursor.execute("SELECT * FROM DEPARTMENT")
+            departmentTuple = cursor.fetchall()
+            departmentList = []
+            for department in departmentTuple:
+                departmentList.append(department[0])
+            Label(self.addProjectFrame, text = "Department Requirement").grid(row = 9, column = 0)
+            departmentVar = StringVar()
+            departmentVar.set(departmentList[0])
+            self.projectDepartmentOption = OptionMenu(self.addProjectFrame, departmentVar, *departmentList)
+            self.projectDepartmentOption.grid(row = 9, column = 1)
+    
+            self.addProjectBackButton = Button(self.addProjectFrame, text = "Back")
+            self.addProjectBackButton.grid(row = 10, column = 0)
+            self.addProjectSubmitButton = Button(self.addProjectFrame, text = "Submit", command = self.submitProject)
+            self.addProjectSubmitButton.grid(row = 11, column = 0)
+
+            cursor.close()
+            db.close()
+        
+        except:
+            print("could not connect to database")
+
+    def submitProject(self):
+        print("submitted project")
 win = Tk()
 app = cs4400Project(win)
 win.mainloop()
