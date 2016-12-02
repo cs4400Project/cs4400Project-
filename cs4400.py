@@ -1,6 +1,10 @@
 from Tkinter import *
 import pymysql
 from re import findall
+import urllib.request
+import re
+
+
 
 class cs4400Project:
 
@@ -10,25 +14,59 @@ class cs4400Project:
         #Login GUI
         self.rootwin = rootwin
         self.rootwin.title("Login")
+        self.rootwin.configure(background="gray")
 
-        self.frame = Frame(self.rootwin)
-        self.frame.pack()
+        self.frame = Frame(self.rootwin,background="gray")
+        self.frame.pack()  ###fill?
+
+        self.frame2 = Frame(self.rootwin,background="gray")
+        self.frame2.pack(side=LEFT) ###
+
+        self.frame3 = Frame(self.rootwin,background="gray")
+        self.frame3.pack(side=RIGHT)
+
+
+        #picc SLS
+        url = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        response = urllib.request.urlopen(url)
+        myPicture = response.read()
+        import base64
+        b64_data = base64.encodebytes(myPicture)
+        self.photo = PhotoImage(data=b64_data)
+        l = Label(self.frame, image = self.photo)
+        l.grid(row= 0, column = 0, sticky= E)
+        #picc SLS
+
+
 
         #Labels and Entry Boxes
-        Label(self.frame, text = "Username:").grid(row = 1, column = 0)
-        self.usernameEntry = Entry(self.frame, width = 30)
-        self.usernameEntry.grid(row=1, column = 1)
-        Label(self.frame, text = "Password:").grid(row = 2, column = 0)
-        self.passwordEntry = Entry(self.frame, width = 30)
-        self.passwordEntry.grid(row=2, column = 1)
+        Label(self.frame2, text = "Username:",background="gray").grid(row = 2, column = 0,sticky=W)
+        self.usernameEntry = Entry(self.frame2, width = 30)
+        self.usernameEntry.grid(row=3, column = 0)
+        Label(self.frame2, text = "Password:",background="gray").grid(row = 4, column = 0,sticky=W)
+        self.passwordEntry = Entry(self.frame2, width = 30)
+        self.passwordEntry.grid(row=5, column = 0)
 
         #Buttons
         #Login takes you to welcome if correct
         #Register takes you to the register page
-        self.loginButton = Button(self.frame, text = "Login", command = self.loginCheck)
-        self.loginButton.grid(row = 3, column = 0)
-        self.registerButton = Button(self.frame, text = "Register", command = self.registerPage)
-        self.registerButton.grid(row = 3, column = 1)
+        self.loginButton = Button(self.frame2, text = "Login", command = self.loginCheck,width=12,background="gray")
+        self.loginButton.grid(row = 6, column = 0,sticky=W,pady=10)
+        self.registerButton = Button(self.frame2, text = "Register", command = self.registerPage,width=12,background="gray")
+        self.registerButton.grid(row = 6, column = 0,sticky=E,pady=10)
+
+        #pic2
+
+        url2 = "http://imageshack.com/a/img924/234/jPYnHe.gif" ## smaller pic http://imageshack.com/a/img922/3895/F4owQE.gif
+        response2 = urllib.request.urlopen(url2)
+        myPicture2 = response2.read()
+        import base64
+        b64_data2 = base64.encodebytes(myPicture2)
+        self.photo2 = PhotoImage(data=b64_data2)
+        l2 = Label(self.frame3, image = self.photo2)
+        l2.grid(row= 0, column = 0, sticky= E)
+
+        #pic2
 
 
     def loginCheck(self):
@@ -80,30 +118,47 @@ class cs4400Project:
         self.rootwin.withdraw()
         self.regWin = Toplevel()
         self.regWin.title("Register")
-        self.regFrame = Frame(self.regWin)
+        self.regWin.configure(background="gray")
+
+        ###slspic
+
+        self.picFrame =Frame(self.regWin,background="gray")
+        self.picFrame.pack()
+
+        urlsls = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        responsesls = urllib.request.urlopen(urlsls)
+        myPicturesls = responsesls.read()
+        import base64
+        b64_datasls = base64.encodebytes(myPicturesls)
+        self.photosls = PhotoImage(data=b64_datasls)
+        lsls = Label(self.picFrame, image = self.photosls)
+        lsls.grid(row= 0, column = 0, sticky= E)
+        #slspicc
+
+        self.regFrame = Frame(self.regWin,background="gray")
         self.regFrame.pack()
 
         #Labels and Entry Boxes
-        Label(self.regFrame, text = "Username:").grid(row = 0, column = 0)
-        Label(self.regFrame, text = "GT Email:").grid(row = 1, column = 0)
-        Label(self.regFrame, text = "Password:").grid(row = 2, column = 0)
-        Label(self.regFrame, text = "Confirm Password:").grid(row = 3, column = 0)
+        Label(self.regFrame, text = "Username:",background="gray").grid(row = 0, column = 0)
+        Label(self.regFrame, text = "GT Email:",background="gray").grid(row = 1, column = 0)
+        Label(self.regFrame, text = "Password:",background="gray").grid(row = 2, column = 0)
+        Label(self.regFrame, text = "Confirm Password:",background="gray").grid(row = 3, column = 0)
         self.regUsernameEntry = Entry(self.regFrame, width = 30)
-        self.regUsernameEntry.grid(row = 0, column = 1)
+        self.regUsernameEntry.grid(row = 0, column = 1,columnspan=2)
         self.regEmailEntry = Entry(self.regFrame, width = 30)
-        self.regEmailEntry.grid(row = 1, column = 1)
+        self.regEmailEntry.grid(row = 1, column = 1,columnspan=2)
         self.regPasswordEntry = Entry(self.regFrame, width = 30)
-        self.regPasswordEntry.grid(row = 2, column = 1)
+        self.regPasswordEntry.grid(row = 2, column = 1,columnspan=2)
         self.regConfirmPasswordEntry = Entry(self.regFrame, width = 30)
-        self.regConfirmPasswordEntry.grid(row = 3, column = 1)
+        self.regConfirmPasswordEntry.grid(row = 3, column = 1,columnspan=2)
 
         #Buttons
         #Register submits the information (if correct) and straight to the welcome page
         #Back sends you back to the login page
-        self.regButton = Button(self.regFrame, text = "Register", command = self.registerUser)
-        self.regButton.grid(row = 4, column = 0)
-        self.regBackButton = Button(self.regFrame, text = "Back", command = self.backToLogin)
-        self.regBackButton.grid(row = 4, column = 1)
+        self.regButton = Button(self.regFrame, text = "Back", command = self.backToLogin,width=5,background="gray")
+        self.regButton.grid(row = 4, column = 1,sticky=E)
+        self.regBackButton = Button(self.regFrame, text = "Register", command = self.registerUser,width=8,background="gray")
+        self.regBackButton.grid(row = 4, column = 2,sticky=E+W)
 
 
     def loginToWelcome(self):
@@ -210,8 +265,23 @@ class cs4400Project:
             self.meWin.withdraw()
         self.editWin = Toplevel()
         self.editWin.title("Edit Profile")
-        self.editFrame = Frame(self.editWin)
-        self.editFrame.pack()
+
+        self.piceditFrame = Frame(self.editWin,background="gray")
+        self.piceditFrame.pack()
+
+        #picc SLS
+        editurl = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        editresponse = urllib.request.urlopen(editurl)
+        myeditPicture = editresponse.read()
+        import base64
+        editb64_data = base64.encodebytes(myeditPicture)
+        self.editphoto = PhotoImage(data=editb64_data)
+        editpicl = Label(self.piceditFrame, image = self.editphoto)
+        editpicl.grid(row= 0, column = 0, sticky= E)
+        #picc SLS
+
+        self.editFrame = Frame(self.editWin,background="gray")
+        self.editFrame.pack(fill=X)
         print("at edit profile")
 
         try:
@@ -237,7 +307,7 @@ class cs4400Project:
                 self.majorDict[major[0]] = major[1]
                 majorList.append(major[0])
 
-            Label(self.editFrame, text = "Major").grid(row = 0, column = 0)
+            Label(self.editFrame, text = "Major:",background="gray").grid(row = 0, column = 0)
             self.majorVariable = StringVar()
             #If the user is new, then what is shown is the first major from the
             #List, if not then it is the major they currently have
@@ -256,7 +326,7 @@ class cs4400Project:
             majorOptionMenu.grid(row = 0, column = 1)
 
             #same concept with year for old v new users
-            Label(self.editFrame, text = "Year").grid(row = 1, column = 0)
+            Label(self.editFrame, text = "Year:",background="gray").grid(row = 1, column = 0)
             yearVariable = StringVar()
             if(self.newUser):
                 yearVariable.set("Freshman")
@@ -268,7 +338,7 @@ class cs4400Project:
             #once things are selected the user is no longer new
             self.newUser = False
 
-            Label(self.editFrame, text = "Department").grid(row = 2, column = 0)
+            Label(self.editFrame, text = "Department:",background="gray").grid(row = 2, column = 0)
             self.departmentLabel = Label(self.editFrame, text = self.departmentVar.get())
             self.departmentLabel.grid(row = 2, column = 1)
 
@@ -341,22 +411,36 @@ class cs4400Project:
         #GUI for admin "choose functionality" page
         self.chooseFunctionalityWin = Toplevel()
         self.chooseFunctionalityWin.title("Choose Functionality")
-        self.chooseFunctionalityFrame = Frame(self.chooseFunctionalityWin)
+        self.chooseFunctionalityWin.configure(background="grey")
+
+        self.adminpicFrame = Frame(self.chooseFunctionalityWin,background="grey")
+        self.adminpicFrame.pack()
+
+        #picc SLS
+        adminurl = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        adminresponse = urllib.request.urlopen(adminurl)
+        myadminPicture = adminresponse.read()
+        import base64
+        adminb64_data = base64.encodebytes(myadminPicture)
+        self.adminphoto = PhotoImage(data=adminb64_data)
+        adminl = Label(self.adminpicFrame, image = self.adminphoto)
+        adminl.grid(row= 0, column = 0, sticky= E)
+        #picc SLS
+
+
+        self.chooseFunctionalityFrame = Frame(self.chooseFunctionalityWin,background="grey")
         self.chooseFunctionalityFrame.pack()
 
         self.viewAppButton = Button(self.chooseFunctionalityFrame, text = "View Application", command = self.CFToViewApp)
-        self.viewAppButton.grid(row = 0, column = 0)
+        self.viewAppButton.grid(row = 0, column = 0, pady=5)
         self.viewPopProReportButton = Button(self.chooseFunctionalityFrame, text = "View Popular Project Report", command = self.CFToViewPopPro)
-        self.viewPopProReportButton.grid(row = 1, column = 0)
+        self.viewPopProReportButton.grid(row = 2, column = 0, pady=5)
         self.viewAppReportButton = Button(self.chooseFunctionalityFrame, text = "View Application Report", command = self.CFToAppReport)
-        self.viewAppReportButton.grid(row = 2, column = 0)
+        self.viewAppReportButton.grid(row = 4, column = 0,pady=5)
         self.addAProjectButton = Button(self.chooseFunctionalityFrame, text = "Add A Project", command = self.CFToAddPro)
-        self.addAProjectButton.grid(row = 3, column = 0)
+        self.addAProjectButton.grid(row = 6, column = 0, pady=5)
         self.addACourseButton = Button(self.chooseFunctionalityFrame, text = "Add A Course", command = self.CFToAddCourse)
-        self.addACourseButton.grid(row = 4, column = 0)
-
-        self.logoutButton = Button(self.chooseFunctionalityFrame, text = "Logout", command = self.logout)
-        self.logoutButton.grid(row = 5, column = 0)
+        self.addACourseButton.grid(row = 8, column = 0,pady=5)
 
     def CFToViewApp(self):
         print("View App")
