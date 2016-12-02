@@ -507,7 +507,9 @@ class cs4400Project:
         self.addProject()
 
     def CFToAddCourse(self):
-        print("Add Project")
+        self.chooseFunctionalityWin.withdraw()
+        self.addCourse()
+        print("Add Course")
 
     def logout(self):
         self.chooseFunctionalityWin.withdraw()
@@ -575,7 +577,7 @@ class cs4400Project:
             self.categoryOption = OptionMenu(self.addProjectFrame, self.categorySelection, *self.categoryList)
             self.categoryOption.grid(row = 4, column = 1,pady=6)
 
-            self.addCategoryButton = Button(self.addProjectFrame, text = "Add Project", command = self.addCategory)
+            self.addCategoryButton = Button(self.addProjectFrame, text = "Add Project", command = self.addProjectCategory)
             self.addCategoryButton.grid(row = 5, column = 0)
 
             cursor.execute("SELECT * FROM DESIGNATION;")
@@ -633,7 +635,7 @@ class cs4400Project:
         except:
             print("could not connect to database")
 
-    def addCategory(self):
+    def addProjectCategory(self):
         print('add category')
         self.categories.append(StringVar())
         self.categories[len(self.categories)-1].set(self.categoryList[0])
@@ -648,6 +650,42 @@ class cs4400Project:
         for i in self.categories:
             print(i.get())
         print("submitted project")
+
+    def addCourse(self):
+        #GUI for add course
+        print('add course')
+        self.addCourseWin = Toplevel()
+        self.addCourseWin.title("Add Course")
+        self.addCourseFrame = Frame(self.addCourseWin)
+        self.addCourseFrame.pack()
+        print('made add course frame')
+        Label(self.addCourseFrame, text = "Course Number").grid(row = 0, column = 0)
+        self.courseNumberEntry = Entry(self.addCourseFrame)
+        self.courseNumberEntry.grid(row = 0, column = 1)
+        Label(self.addCourseFrame, text = "Course Name").grid(row = 1, column = 0)
+        self.courseNameEntry = Entry(self.addCourseFrame)
+        self.courseNameEntry.grid(row = 1, column = 1)
+        Label(self.addCourseFrame, text = "Instructor").grid(row = 2, column = 0)
+        self.courseInstructorEntry = Entry(self.addCourseFrame)
+        self.courseInstructorEntry.grid(row = 2, column = 1)
+        Label(self.addCourseFrame, text = "Designation").grid(row = 3, column = 0)
+        
+        Label(self.addCourseFrame, text = "Category").grid(row = 4, column = 0)
+        
+        self.addCourseButton = Button(self.addCourseFrame, text = "Add Course",command= self.addCourseCategory)
+        self.addCourseButton.grid(row = 5, column = 0)
+        Label(self.addCourseFrame, text = "Estimated Number of Students").grid(row = 6, column = 0)
+        self.courseEstNumOfStudents = Entry(self.addCourseFrame)
+        self.courseEstNumOfStudents.grid(row = 6, column = 1)
+
+        self.courseBackButton = Button(self.addCourseFrame, text = "Back")
+        self.courseBackButton.grid(row = 7, column = 0)
+        self.courseSubmitButton = Button(self.addCourseFrame, text = "Submit")
+        self.courseSubmitButton.grid(row = 8, column = 0)
+
+
+    def addCourseCategory(self):
+        print("added Course")
 
 win = Tk()
 app = cs4400Project(win)
