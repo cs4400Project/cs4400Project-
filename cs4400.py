@@ -234,12 +234,35 @@ class cs4400Project:
         #GUI for the welcome screen
         self.welcomeWin = Toplevel()
         self.welcomeWin.title("Welcome")
+
+        ###slspic
+
+        self.picFrame =Frame(self.welcomeWin,background="gray")
+        self.picFrame.pack()
+
+        urlsls = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        responsesls = urllib.request.urlopen(urlsls)
+        myPicturesls = responsesls.read()
+        import base64
+        b64_datasls = base64.encodebytes(myPicturesls)
+        self.photosls = PhotoImage(data=b64_datasls)
+        lsls = Label(self.picFrame, image = self.photosls)
+        lsls.grid(row= 0, column = 0, sticky= E)
+        #slspicc
+
         self.welcomeFrame = Frame(self.welcomeWin)
         self.welcomeFrame.pack()
 
         #Me Button
-        self.meButton = Button(self.welcomeFrame, text = "Me", command = self.meWindow)
-        self.meButton.grid(row = 0, column = 0)
+        self.meButton = Button(self.welcomeFrame, text = "My Profile", command = self.meWindow)
+        self.meButton.grid(row = 0, column = 0, padx = 20, pady = 20)
+        self.logoutButton = Button(self.welcomeFrame, text = "Log Out", command = self.logoutMe)
+        self.logoutButton.grid(row = 2, column = 0, padx = 20, pady = 20)
+
+    def logoutMe(self):
+        self.welcomeWin.withdraw()
+        self.rootwin.iconify()
+        print("logged out")
 
     def meWindow(self):
 
@@ -247,14 +270,37 @@ class cs4400Project:
         self.welcomeWin.withdraw()
         self.meWin = Toplevel()
         self.meWin.title("Me")
+
+        ###slspic
+
+        self.picFrame =Frame(self.meWin,background="gray")
+        self.picFrame.pack()
+
+        urlsls = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        responsesls = urllib.request.urlopen(urlsls)
+        myPicturesls = responsesls.read()
+        import base64
+        b64_datasls = base64.encodebytes(myPicturesls)
+        self.photosls = PhotoImage(data=b64_datasls)
+        lsls = Label(self.picFrame, image = self.photosls)
+        lsls.grid(row= 0, column = 0, sticky= E)
+        #slspicc
+
         self.meFrame = Frame(self.meWin)
         self.meFrame.pack()
 
         #Has 2 buttons, Edit Profile and My Applications 
         self.editProfileButton = Button(self.meFrame, text = "Edit Profile", command = self.toEditProfile)
-        self.editProfileButton.grid(row = 0, column = 0)
+        self.editProfileButton.grid(row = 0, column = 0, padx = 20, pady = 10)
         self.myApplicationButton = Button(self.meFrame, text = "My Application")
-        self.myApplicationButton.grid(row = 1, column = 0)
+        self.myApplicationButton.grid(row = 2, column = 0, padx = 20, pady = 10)
+        self.backButton = Button(self.meFrame, text = "Back", command = self.backToMe)
+        self.backButton.grid(row = 4, column = 0, padx = 20, pady = 10)
+
+
+    def backToMe(self):
+        self.meWin.withdraw()
+        self.welcomeScreen()
 
     def toEditProfile(self):
         #If the user logged in, then it would first be taken to the welcome screen
@@ -567,6 +613,7 @@ class cs4400Project:
         advisorEmail = self.advisorEmailEntry.get().strip()
         description = self.projectDescriptionEntry.get().strip()
         print("submitted project")
+
 win = Tk()
 app = cs4400Project(win)
 win.mainloop()
