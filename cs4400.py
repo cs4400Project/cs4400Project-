@@ -35,7 +35,7 @@ class cs4400Project:
         self.photo = PhotoImage(data=b64_data)
         l = Label(self.frame, image = self.photo)
         l.grid(row= 0, column = 0, sticky= E)
-        #picc
+        #picc SLS
 
 
         
@@ -51,9 +51,9 @@ class cs4400Project:
         #Login takes you to welcome if correct
         #Register takes you to the register page
         self.loginButton = Button(self.frame2, text = "Login", command = self.loginCheck,width=12,background="gray")
-        self.loginButton.grid(row = 6, column = 0,sticky=W)
+        self.loginButton.grid(row = 6, column = 0,sticky=W,pady=10)
         self.registerButton = Button(self.frame2, text = "Register", command = self.registerPage,width=12,background="gray")
-        self.registerButton.grid(row = 6, column = 0,sticky=E)
+        self.registerButton.grid(row = 6, column = 0,sticky=E,pady=10)
 
         #pic2
 
@@ -265,8 +265,23 @@ class cs4400Project:
             self.meWin.withdraw()
         self.editWin = Toplevel()
         self.editWin.title("Edit Profile")
-        self.editFrame = Frame(self.editWin)
-        self.editFrame.pack()
+
+        self.piceditFrame = Frame(self.editWin,background="gray")
+        self.piceditFrame.pack()
+
+        #picc SLS
+        editurl = "http://imageshack.com/a/img923/492/NJ18VG.gif" 
+        editresponse = urllib.request.urlopen(editurl)
+        myeditPicture = editresponse.read()
+        import base64
+        editb64_data = base64.encodebytes(myeditPicture)
+        self.editphoto = PhotoImage(data=editb64_data)
+        editpicl = Label(self.piceditFrame, image = self.editphoto)
+        editpicl.grid(row= 0, column = 0, sticky= E)
+        #picc SLS
+        
+        self.editFrame = Frame(self.editWin,background="gray")
+        self.editFrame.pack(fill=X)
         print("at edit profile")
 
         try:
@@ -292,7 +307,7 @@ class cs4400Project:
                 self.majorDict[major[0]] = major[1]
                 majorList.append(major[0])
 
-            Label(self.editFrame, text = "Major").grid(row = 0, column = 0)
+            Label(self.editFrame, text = "Major:",background="gray").grid(row = 0, column = 0)
             self.majorVariable = StringVar()
             #If the user is new, then what is shown is the first major from the
             #List, if not then it is the major they currently have
@@ -311,7 +326,7 @@ class cs4400Project:
             majorOptionMenu.grid(row = 0, column = 1)
 
             #same concept with year for old v new users
-            Label(self.editFrame, text = "Year").grid(row = 1, column = 0)
+            Label(self.editFrame, text = "Year:",background="gray").grid(row = 1, column = 0)
             yearVariable = StringVar()
             if(self.newUser):
                 yearVariable.set("Freshman")
@@ -323,7 +338,7 @@ class cs4400Project:
             #once things are selected the user is no longer new
             self.newUser = False
 
-            Label(self.editFrame, text = "Department").grid(row = 2, column = 0)
+            Label(self.editFrame, text = "Department:",background="gray").grid(row = 2, column = 0)
             self.departmentLabel = Label(self.editFrame, text = self.departmentVar.get())
             self.departmentLabel.grid(row = 2, column = 1)
 
@@ -396,19 +411,36 @@ class cs4400Project:
         #GUI for admin "choose functionality" page
         self.chooseFunctionalityWin = Toplevel()
         self.chooseFunctionalityWin.title("Choose Functionality")
-        self.chooseFunctionalityFrame = Frame(self.chooseFunctionalityWin)
+        self.chooseFunctionalityWin.configure(background="grey")
+
+        self.adminpicFrame = Frame(self.chooseFunctionalityWin,background="grey")
+        self.adminpicFrame.pack()
+
+        #picc SLS
+        adminurl = "http://imageshack.com/a/img923/492/NJ18VG.gif" 
+        adminresponse = urllib.request.urlopen(adminurl)
+        myadminPicture = adminresponse.read()
+        import base64
+        adminb64_data = base64.encodebytes(myadminPicture)
+        self.adminphoto = PhotoImage(data=adminb64_data)
+        adminl = Label(self.adminpicFrame, image = self.adminphoto)
+        adminl.grid(row= 0, column = 0, sticky= E)
+        #picc SLS
+
+        
+        self.chooseFunctionalityFrame = Frame(self.chooseFunctionalityWin,background="grey")
         self.chooseFunctionalityFrame.pack()
 
         self.viewAppButton = Button(self.chooseFunctionalityFrame, text = "View Application", command = self.CFToViewApp)
-        self.viewAppButton.grid(row = 0, column = 0)
+        self.viewAppButton.grid(row = 0, column = 0, pady=5)
         self.viewPopProReportButton = Button(self.chooseFunctionalityFrame, text = "View Popular Project Report", command = self.CFToViewPopPro)
-        self.viewPopProReportButton.grid(row = 1, column = 0)
+        self.viewPopProReportButton.grid(row = 2, column = 0, pady=5)
         self.viewAppReportButton = Button(self.chooseFunctionalityFrame, text = "View Application Report", command = self.CFToAppReport)
-        self.viewAppReportButton.grid(row = 2, column = 0)
+        self.viewAppReportButton.grid(row = 4, column = 0,pady=5)
         self.addAProjectButton = Button(self.chooseFunctionalityFrame, text = "Add A Project", command = self.CFToAddPro)
-        self.addAProjectButton.grid(row = 3, column = 0)
+        self.addAProjectButton.grid(row = 6, column = 0, pady=5)
         self.addACourseButton = Button(self.chooseFunctionalityFrame, text = "Add A Course", command = self.CFToAddCourse)
-        self.addACourseButton.grid(row = 4, column = 0)
+        self.addACourseButton.grid(row = 8, column = 0,pady=5)
 
     def CFToViewApp(self):
         print("View App")
