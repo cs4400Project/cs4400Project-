@@ -1,6 +1,8 @@
 from tkinter import *
 import pymysql
 from re import findall
+import urllib.request
+import re
 
 
 
@@ -12,25 +14,59 @@ class cs4400Project:
         #Login GUI
         self.rootwin = rootwin
         self.rootwin.title("Login")
+        self.rootwin.configure(background="gray")
 
-        self.frame = Frame(self.rootwin)
-        self.frame.pack()
+        self.frame = Frame(self.rootwin,background="gray")
+        self.frame.pack()  ###fill? 
 
+        self.frame2 = Frame(self.rootwin,background="gray")
+        self.frame2.pack(side=LEFT) ###
+
+        self.frame3 = Frame(self.rootwin,background="gray")
+        self.frame3.pack(side=RIGHT)
+        
+        
+        #picc SLS
+        url = "http://imageshack.com/a/img923/492/NJ18VG.gif" 
+        response = urllib.request.urlopen(url)
+        myPicture = response.read()
+        import base64
+        b64_data = base64.encodebytes(myPicture)
+        self.photo = PhotoImage(data=b64_data)
+        l = Label(self.frame, image = self.photo)
+        l.grid(row= 0, column = 0, sticky= E)
+        #picc
+
+
+        
         #Labels and Entry Boxes
-        Label(self.frame, text = "Username:").grid(row = 1, column = 0)
-        self.usernameEntry = Entry(self.frame, width = 30)
-        self.usernameEntry.grid(row=1, column = 1)
-        Label(self.frame, text = "Password:").grid(row = 2, column = 0)
-        self.passwordEntry = Entry(self.frame, width = 30)
-        self.passwordEntry.grid(row=2, column = 1)
+        Label(self.frame2, text = "Username:",background="gray").grid(row = 2, column = 0,sticky=W)
+        self.usernameEntry = Entry(self.frame2, width = 30)
+        self.usernameEntry.grid(row=3, column = 0)
+        Label(self.frame2, text = "Password:",background="gray").grid(row = 4, column = 0,sticky=W)
+        self.passwordEntry = Entry(self.frame2, width = 30)
+        self.passwordEntry.grid(row=5, column = 0)
 
         #Buttons
         #Login takes you to welcome if correct
         #Register takes you to the register page
-        self.loginButton = Button(self.frame, text = "Login", command = self.loginCheck)
-        self.loginButton.grid(row = 3, column = 0)
-        self.registerButton = Button(self.frame, text = "Register", command = self.registerPage)
-        self.registerButton.grid(row = 3, column = 1)
+        self.loginButton = Button(self.frame2, text = "Login", command = self.loginCheck,width=12,background="gray")
+        self.loginButton.grid(row = 6, column = 0,sticky=W)
+        self.registerButton = Button(self.frame2, text = "Register", command = self.registerPage,width=12,background="gray")
+        self.registerButton.grid(row = 6, column = 0,sticky=E)
+
+        #pic2
+
+        url2 = "http://imageshack.com/a/img924/234/jPYnHe.gif" ## smaller pic http://imageshack.com/a/img922/3895/F4owQE.gif 
+        response2 = urllib.request.urlopen(url2)
+        myPicture2 = response2.read()
+        import base64
+        b64_data2 = base64.encodebytes(myPicture2)
+        self.photo2 = PhotoImage(data=b64_data2)
+        l2 = Label(self.frame3, image = self.photo2)
+        l2.grid(row= 0, column = 0, sticky= E)
+
+        #pic2
 
 
     def loginCheck(self):
@@ -74,30 +110,47 @@ class cs4400Project:
         self.rootwin.withdraw()
         self.regWin = Toplevel()
         self.regWin.title("Register")
-        self.regFrame = Frame(self.regWin)
-        self.regFrame.pack()
+        self.regWin.configure(background="gray")
 
+        ###slspic
+
+        self.picFrame =Frame(self.regWin,background="gray")
+        self.picFrame.pack()
+        
+        urlsls = "http://imageshack.com/a/img923/492/NJ18VG.gif" 
+        responsesls = urllib.request.urlopen(urlsls)
+        myPicturesls = responsesls.read()
+        import base64
+        b64_datasls = base64.encodebytes(myPicturesls)
+        self.photosls = PhotoImage(data=b64_datasls)
+        lsls = Label(self.picFrame, image = self.photosls)
+        lsls.grid(row= 0, column = 0, sticky= E)
+        #slspicc
+        
+        self.regFrame = Frame(self.regWin,background="gray")
+        self.regFrame.pack()
+        
         #Labels and Entry Boxes
-        Label(self.regFrame, text = "Username:").grid(row = 0, column = 0)
-        Label(self.regFrame, text = "GT Email:").grid(row = 1, column = 0)
-        Label(self.regFrame, text = "Password:").grid(row = 2, column = 0)
-        Label(self.regFrame, text = "Confirm Password:").grid(row = 3, column = 0)
+        Label(self.regFrame, text = "Username:",background="gray").grid(row = 0, column = 0)
+        Label(self.regFrame, text = "GT Email:",background="gray").grid(row = 1, column = 0)
+        Label(self.regFrame, text = "Password:",background="gray").grid(row = 2, column = 0)
+        Label(self.regFrame, text = "Confirm Password:",background="gray").grid(row = 3, column = 0)
         self.regUsernameEntry = Entry(self.regFrame, width = 30)
-        self.regUsernameEntry.grid(row = 0, column = 1)
+        self.regUsernameEntry.grid(row = 0, column = 1,columnspan=2)
         self.regEmailEntry = Entry(self.regFrame, width = 30)
-        self.regEmailEntry.grid(row = 1, column = 1)
+        self.regEmailEntry.grid(row = 1, column = 1,columnspan=2)
         self.regPasswordEntry = Entry(self.regFrame, width = 30)
-        self.regPasswordEntry.grid(row = 2, column = 1)
+        self.regPasswordEntry.grid(row = 2, column = 1,columnspan=2)
         self.regConfirmPasswordEntry = Entry(self.regFrame, width = 30)
-        self.regConfirmPasswordEntry.grid(row = 3, column = 1)
+        self.regConfirmPasswordEntry.grid(row = 3, column = 1,columnspan=2)
 
         #Buttons
         #Register submits the information (if correct) and straight to the welcome page
         #Back sends you back to the login page
-        self.regButton = Button(self.regFrame, text = "Register", command = self.registerUser)
-        self.regButton.grid(row = 4, column = 0)
-        self.regBackButton = Button(self.regFrame, text = "Back", command = self.backToLogin)
-        self.regBackButton.grid(row = 4, column = 1)       
+        self.regButton = Button(self.regFrame, text = "Back", command = self.backToLogin,width=5,background="gray")
+        self.regButton.grid(row = 4, column = 1,sticky=E)
+        self.regBackButton = Button(self.regFrame, text = "Register", command = self.registerUser,width=8,background="gray") 
+        self.regBackButton.grid(row = 4, column = 2,sticky=E+W)       
 
 
     def loginToWelcome(self):
