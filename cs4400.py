@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 import pymysql
 from re import findall
 import urllib.request
@@ -441,6 +441,10 @@ class cs4400Project:
         self.addAProjectButton.grid(row = 6, column = 0, pady=5)
         self.addACourseButton = Button(self.chooseFunctionalityFrame, text = "Add A Course", command = self.CFToAddCourse)
         self.addACourseButton.grid(row = 8, column = 0,pady=5)
+
+        self.logoutButton = Button(self.chooseFunctionalityFrame, text = "Logout", command = self.logout)
+        self.logoutButton.grid(row = 9, column = 0)
+
 
     def CFToViewApp(self):
         print("View App")
