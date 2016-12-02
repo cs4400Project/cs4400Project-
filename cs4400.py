@@ -164,8 +164,7 @@ class cs4400Project:
         
     def regToEditProfile(self):
         #If the register is successful, then the register window will close
-        #And the welcome screen will appear
-        print("register user function running")
+        #And the user will be taken straight to the edit profile screen
         self.regWin.withdraw()
         self.toEditProfile()
         print("at edit profile")
@@ -177,32 +176,36 @@ class cs4400Project:
         self.rootwin.iconify()
 
     def welcomeScreen(self):
-        print("at welcome screen hahaha")
         #GUI for the welcome screen
         self.welcomeWin = Toplevel()
-        print("made window")
         self.welcomeWin.title("Welcome")
         self.welcomeFrame = Frame(self.welcomeWin)
         self.welcomeFrame.pack()
-        print("made Frame")
 
         #Me Button
         self.meButton = Button(self.welcomeFrame, text = "Me", command = self.meWindow)
         self.meButton.grid(row = 0, column = 0)
 
     def meWindow(self):
+
+        #GUI for the Me page
         self.welcomeWin.withdraw()
         self.meWin = Toplevel()
         self.meWin.title("Me")
         self.meFrame = Frame(self.meWin)
         self.meFrame.pack()
 
+        #Has 2 buttons, Edit Profile and My Applications 
         self.editProfileButton = Button(self.meFrame, text = "Edit Profile", command = self.toEditProfile)
         self.editProfileButton.grid(row = 0, column = 0)
         self.myApplicationButton = Button(self.meFrame, text = "My Application")
         self.myApplicationButton.grid(row = 1, column = 0)
 
     def toEditProfile(self):
+        #If the user logged in, then it would first be taken to the welcome screen
+        #And then the edit profile is only if they choose to
+        #But if they are registering for the first time, they are instantly
+        #Taken to the edit profile page
         if(not self.newUser):
             self.meWin.withdraw()
         self.editWin = Toplevel()
@@ -217,11 +220,17 @@ class cs4400Project:
                                  passwd = "2KZtbzKa", db = "cs4400_Team_5")
             print("connected")
             cursor = db.cursor()
+
+            #Setting up the major option
             cursor.execute("SELECT * FROM MAJOR")
             majorTuple = cursor.fetchall()
             cursor.execute("SELECT Major,Year FROM USER WHERE Username = %s", (self.currentUser,))
             currentUser = cursor.fetchall()
-            print(currentUser)
+
+            #Using what we got from the SQL statement, majorTuple holds
+            #tuples that look like (major, department) so we are going to
+            #Make a dictionary to hold all of the mappings as well as
+            #Make a list of all the majors to have for the dropdown menu
             majorList = []
             self.majorDict = {}
             for major in majorTuple:
@@ -230,11 +239,14 @@ class cs4400Project:
 
             Label(self.editFrame, text = "Major").grid(row = 0, column = 0)
             self.majorVariable = StringVar()
+            #If the user is new, then what is shown is the first major from the
+            #List, if not then it is the major they currently have
             if(self.newUser):
                 self.majorVariable.set(majorList[0])
             else:
                 self.majorVariable.set(currentUser[0][0])
-            print("made the variable")
+
+            #setting the initial department, same concept with new user v. old
             self.departmentVar = StringVar()
             if(self.newUser):
                 self.departmentVar.set(self.majorDict[majorList[0]])
@@ -242,8 +254,8 @@ class cs4400Project:
                 self.departmentVar.set(self.majorDict[currentUser[0][0]])
             majorOptionMenu = OptionMenu(self.editFrame, self.majorVariable, *majorList,command = self.changeDepartment)
             majorOptionMenu.grid(row = 0, column = 1)
-            print("made the option menu")
-            
+
+            #same concept with year for old v new users
             Label(self.editFrame, text = "Year").grid(row = 1, column = 0)
             yearVariable = StringVar()
             if(self.newUser):
@@ -252,6 +264,8 @@ class cs4400Project:
                 yearVariable.set(currentUser[0][1])
             yearOptionMenu = OptionMenu(self.editFrame, yearVariable, "Freshman", "Sophomore", "Junior", "Senior", command = self.changeYear)
             yearOptionMenu.grid(row = 1, column = 1)
+
+            #once things are selected the user is no longer new
             self.newUser = False
 
             Label(self.editFrame, text = "Department").grid(row = 2, column = 0)
@@ -268,6 +282,9 @@ class cs4400Project:
 
 
     def changeDepartment(self,major):
+        #Whenever a new option is selected from the optionMenu, it is instantly
+        #changed in the database. Changing the major also instantly changes
+        #the department
         try:
         #connect to database
             db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
@@ -289,6 +306,8 @@ class cs4400Project:
             print("cannot connect to database")
 
     def changeYear(self, year):
+        #Whenever we choose an option for year, it is instantly updated in the
+        #database
         try:
         #connect to database
             db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
@@ -314,16 +333,16 @@ class cs4400Project:
 
     ###################################ADMIN#################################
     def loginToFunctionality(self):
+        #Goes to admin page
         self.rootwin.withdraw()
         self.chooseFunctionality()
         
     def chooseFunctionality(self):
+        #GUI for admin "choose functionality" page
         self.chooseFunctionalityWin = Toplevel()
         self.chooseFunctionalityWin.title("Choose Functionality")
         self.chooseFunctionalityFrame = Frame(self.chooseFunctionalityWin)
         self.chooseFunctionalityFrame.pack()
-
-        print("Frames made")
 
         self.viewAppButton = Button(self.chooseFunctionalityFrame, text = "View Application", command = self.CFToViewApp)
         self.viewAppButton.grid(row = 0, column = 0)
@@ -353,6 +372,9 @@ class cs4400Project:
         print("Add Project")
 
     def addProject(self):
+
+        #GUI For Add Project Page
+        #Has entry boxes for some, drop down menus for others
         self.addProjectWin = Toplevel()
         self.addProjectWin.title("Add Project")
         self.addProjectFrame = Frame(self.addProjectWin)
@@ -444,6 +466,10 @@ class cs4400Project:
             print("could not connect to database")
 
     def submitProject(self):
+        projectName = self.projectNameEntry.get().strip()
+        advisorName = self.advisorNameEntry.get().strip()
+        advisorEmail = self.advisorEmailEntry.get().strip()
+        description = self.projectDescriptionEntry.get().strip()
         print("submitted project")
 win = Tk()
 app = cs4400Project(win)
