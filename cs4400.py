@@ -205,7 +205,7 @@ class cs4400Project:
                 else:
                     #If everything works then we insert the new user into the database
                     statement = "INSERT INTO USER (Username, Password, Email, UserType) values (%s, %s, %s, %s)"
-                    data = (username, password, email, "User")
+                    data = (username, password, email, "Student")
                     cursor.execute(statement,data)
                     db.commit()
                     print("You have registered a user")
@@ -495,65 +495,73 @@ class cs4400Project:
                                  passwd = "2KZtbzKa", db = "cs4400_Team_5")
             print("connected")
             cursor = db.cursor()
-
+            self.categories = []
             cursor.execute("SELECT * FROM CATEGORY;")
             aList = cursor.fetchall()
-            categoryList = []
+            self.categoryList = []
             for category in aList:
-                categoryList.append(category[0])
+                self.categoryList.append(category[0])
+            print("populated my category list")
             Label(self.addProjectFrame, text = "Category").grid(row = 4, column= 0)
             self.categorySelection = StringVar()
-            self.categorySelection.set(categoryList[0])
-            self.categoryOption = OptionMenu(self.addProjectFrame, self.categorySelection, *categoryList)
+            print("made my var")
+            self.categorySelection.set(self.categoryList[0])
+            print("made my var")
+            self.categories.append(self.categorySelection)
+            self.categoryOption = OptionMenu(self.addProjectFrame, self.categorySelection, *self.categoryList)
             self.categoryOption.grid(row = 4, column = 1)
+
+            self.addCategoryButton = Button(self.addProjectFrame, text = "Add Project", command = self.addCategory)
+            self.addCategoryButton.grid(row = 5, column = 0)
 
             cursor.execute("SELECT * FROM DESIGNATION;")
             aList = cursor.fetchall()
             designationList = []
             for designation in aList:
                 designationList.append(designation[0])
-            Label(self.addProjectFrame, text = "Designation").grid(row = 5, column = 0)
+            Label(self.addProjectFrame, text = "Designation").grid(row = 6, column = 0)
             self.designationVar = StringVar()
             self.designationVar.set(designationList[0])
             self.designationOption = OptionMenu(self.addProjectFrame, self.designationVar, *designationList)
-            self.designationOption.grid(row = 5, column = 1)
+            self.designationOption.grid(row = 6, column = 1)
 
-            Label(self.addProjectFrame, text = "Estimated Number of Students").grid(row = 6, column = 0)
+            Label(self.addProjectFrame, text = "Estimated Number of Students").grid(row = 7, column = 0)
             self.estNumStudentsEntry = Entry(self.addProjectFrame)
-            self.estNumStudentsEntry.grid(row = 6, column = 1)
+            self.estNumStudentsEntry.grid(row = 7, column = 1)
 
             cursor.execute("SELECT * FROM MAJOR")
             majorTuple = cursor.fetchall()
             majorList = []
             for major in majorTuple:
                 majorList.append(major[0])
-            Label(self.addProjectFrame, text = "Major Requirement").grid(row = 7, column = 0)
+            Label(self.addProjectFrame, text = "Major Requirement").grid(row = 8, column = 0)
             majorVar = StringVar()
             majorVar.set(majorList[0])
+            self.numOfCategories = 1
             self.projectMajorOption = OptionMenu(self.addProjectFrame, majorVar, *majorList)
-            self.projectMajorOption.grid(row = 7, column = 1)
+            self.projectMajorOption.grid(row = 8, column = self.numOfCategories)
 
             yearVar = StringVar()
             yearVar.set("Freshman")
-            Label(self.addProjectFrame, text = "Year Requirement").grid(row = 8, column = 0)
+            Label(self.addProjectFrame, text = "Year Requirement").grid(row = 9, column = 0)
             self.projectYearOption = OptionMenu(self.addProjectFrame, yearVar, "Freshman","Sophomore", "Junior","Senior")
-            self.projectYearOption.grid(row = 8, column = 1)
+            self.projectYearOption.grid(row = 9, column = 1)
 
             cursor.execute("SELECT * FROM DEPARTMENT")
             departmentTuple = cursor.fetchall()
             departmentList = []
             for department in departmentTuple:
                 departmentList.append(department[0])
-            Label(self.addProjectFrame, text = "Department Requirement").grid(row = 9, column = 0)
+            Label(self.addProjectFrame, text = "Department Requirement").grid(row = 10, column = 0)
             departmentVar = StringVar()
             departmentVar.set(departmentList[0])
             self.projectDepartmentOption = OptionMenu(self.addProjectFrame, departmentVar, *departmentList)
-            self.projectDepartmentOption.grid(row = 9, column = 1)
+            self.projectDepartmentOption.grid(row = 10, column = 1)
     
             self.addProjectBackButton = Button(self.addProjectFrame, text = "Back")
-            self.addProjectBackButton.grid(row = 10, column = 0)
+            self.addProjectBackButton.grid(row = 11, column = 0)
             self.addProjectSubmitButton = Button(self.addProjectFrame, text = "Submit", command = self.submitProject)
-            self.addProjectSubmitButton.grid(row = 11, column = 0)
+            self.addProjectSubmitButton.grid(row = 12, column = 0)
 
             cursor.close()
             db.close()
@@ -561,11 +569,20 @@ class cs4400Project:
         except:
             print("could not connect to database")
 
+    def addCategory(self):
+        print('add category')
+        self.categories.append(StringVar())
+        self.categories[len(self.categories)-1].set(self.categoryList[0])
+        self.numOfCategories += 1
+        OptionMenu(self.addProjectFrame, self.categories[len(self.categories)-1], *self.categoryList).grid(row = 4, column = self.numOfCategories)
+
     def submitProject(self):
         projectName = self.projectNameEntry.get().strip()
         advisorName = self.advisorNameEntry.get().strip()
         advisorEmail = self.advisorEmailEntry.get().strip()
         description = self.projectDescriptionEntry.get().strip()
+        for i in self.categories:
+            print(i.get())
         print("submitted project")
 win = Tk()
 app = cs4400Project(win)
