@@ -270,7 +270,7 @@ class cs4400Project:
         self.piceditFrame.pack()
 
         #picc SLS
-        editurl = "http://imageshack.com/a/img923/492/NJ18VG.gif" 
+        editurl = "http://imageshack.com/a/img923/492/NJ18VG.gif"
         editresponse = urllib.request.urlopen(editurl)
         myeditPicture = editresponse.read()
         import base64
@@ -279,7 +279,7 @@ class cs4400Project:
         editpicl = Label(self.piceditFrame, image = self.editphoto)
         editpicl.grid(row= 0, column = 0, sticky= E)
         #picc SLS
-        
+
         self.editFrame = Frame(self.editWin,background="gray")
         self.editFrame.pack(fill=X)
         print("at edit profile")
@@ -417,7 +417,7 @@ class cs4400Project:
         self.adminpicFrame.pack()
 
         #picc SLS
-        adminurl = "http://imageshack.com/a/img923/492/NJ18VG.gif" 
+        adminurl = "http://imageshack.com/a/img923/492/NJ18VG.gif"
         adminresponse = urllib.request.urlopen(adminurl)
         myadminPicture = adminresponse.read()
         import base64
@@ -427,7 +427,7 @@ class cs4400Project:
         adminl.grid(row= 0, column = 0, sticky= E)
         #picc SLS
 
-        
+
         self.chooseFunctionalityFrame = Frame(self.chooseFunctionalityWin,background="grey")
         self.chooseFunctionalityFrame.pack()
 
