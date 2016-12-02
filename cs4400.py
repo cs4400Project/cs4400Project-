@@ -205,7 +205,7 @@ class cs4400Project:
                 else:
                     #If everything works then we insert the new user into the database
                     statement = "INSERT INTO USER (Username, Password, Email, UserType) values (%s, %s, %s, %s)"
-                    data = (username, password, email, "User")
+                    data = (username, password, email, "Student")
                     cursor.execute(statement,data)
                     db.commit()
                     print("You have registered a user")
@@ -234,12 +234,35 @@ class cs4400Project:
         #GUI for the welcome screen
         self.welcomeWin = Toplevel()
         self.welcomeWin.title("Welcome")
+
+        ###slspic
+
+        self.picFrame =Frame(self.welcomeWin,background="gray")
+        self.picFrame.pack()
+
+        urlsls = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        responsesls = urllib.request.urlopen(urlsls)
+        myPicturesls = responsesls.read()
+        import base64
+        b64_datasls = base64.encodebytes(myPicturesls)
+        self.photosls = PhotoImage(data=b64_datasls)
+        lsls = Label(self.picFrame, image = self.photosls)
+        lsls.grid(row= 0, column = 0, sticky= E)
+        #slspicc
+
         self.welcomeFrame = Frame(self.welcomeWin)
         self.welcomeFrame.pack()
 
         #Me Button
-        self.meButton = Button(self.welcomeFrame, text = "Me", command = self.meWindow)
-        self.meButton.grid(row = 0, column = 0)
+        self.meButton = Button(self.welcomeFrame, text = "My Profile", command = self.meWindow)
+        self.meButton.grid(row = 0, column = 0, padx = 20, pady = 20)
+        self.logoutButton = Button(self.welcomeFrame, text = "Log Out", command = self.logoutMe)
+        self.logoutButton.grid(row = 2, column = 0, padx = 20, pady = 20)
+
+    def logoutMe(self):
+        self.welcomeWin.withdraw()
+        self.rootwin.iconify()
+        print("logged out")
 
     def meWindow(self):
 
@@ -247,14 +270,37 @@ class cs4400Project:
         self.welcomeWin.withdraw()
         self.meWin = Toplevel()
         self.meWin.title("Me")
+
+        ###slspic
+
+        self.picFrame =Frame(self.meWin,background="gray")
+        self.picFrame.pack()
+
+        urlsls = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        responsesls = urllib.request.urlopen(urlsls)
+        myPicturesls = responsesls.read()
+        import base64
+        b64_datasls = base64.encodebytes(myPicturesls)
+        self.photosls = PhotoImage(data=b64_datasls)
+        lsls = Label(self.picFrame, image = self.photosls)
+        lsls.grid(row= 0, column = 0, sticky= E)
+        #slspicc
+
         self.meFrame = Frame(self.meWin)
         self.meFrame.pack()
 
         #Has 2 buttons, Edit Profile and My Applications 
         self.editProfileButton = Button(self.meFrame, text = "Edit Profile", command = self.toEditProfile)
-        self.editProfileButton.grid(row = 0, column = 0)
+        self.editProfileButton.grid(row = 0, column = 0, padx = 20, pady = 10)
         self.myApplicationButton = Button(self.meFrame, text = "My Application")
-        self.myApplicationButton.grid(row = 1, column = 0)
+        self.myApplicationButton.grid(row = 2, column = 0, padx = 20, pady = 10)
+        self.backButton = Button(self.meFrame, text = "Back", command = self.backToMe)
+        self.backButton.grid(row = 4, column = 0, padx = 20, pady = 10)
+
+
+    def backToMe(self):
+        self.meWin.withdraw()
+        self.welcomeScreen()
 
     def toEditProfile(self):
         #If the user logged in, then it would first be taken to the welcome screen
@@ -475,12 +521,12 @@ class cs4400Project:
         self.addProjectWin = Toplevel()
         self.addProjectWin.title("Add Project")
         self.addProjectWin.configure(background= "gray")
-        
+
         self.addprojectpic = Frame(self.addProjectWin, background="gray")
         self.addprojectpic.pack()
 
         #picc SLS
-        projecturl = "http://imageshack.com/a/img923/492/NJ18VG.gif" 
+        projecturl = "http://imageshack.com/a/img923/492/NJ18VG.gif"
         projectresponse = urllib.request.urlopen(projecturl)
         myprojectPicture = projectresponse.read()
         import base64
@@ -489,8 +535,8 @@ class cs4400Project:
         projectl = Label(self.addprojectpic, image = self.projectphoto)
         projectl.grid(row= 0, column = 0, sticky= E)
         #picc SLS
-        
-        
+
+
         self.addProjectFrame = Frame(self.addProjectWin,background="gray")
         self.addProjectFrame.pack()
 
@@ -513,65 +559,73 @@ class cs4400Project:
                                  passwd = "2KZtbzKa", db = "cs4400_Team_5")
             print("connected")
             cursor = db.cursor()
-
+            self.categories = []
             cursor.execute("SELECT * FROM CATEGORY;")
             aList = cursor.fetchall()
-            categoryList = []
+            self.categoryList = []
             for category in aList:
-                categoryList.append(category[0])
-            Label(self.addProjectFrame, text = "Category:",background="gray").grid(row = 4, column= 0)
+                self.categoryList.append(category[0])
+            print("populated my category list")
+            Label(self.addProjectFrame, text = "Category").grid(row = 4, column= 0)
             self.categorySelection = StringVar()
-            self.categorySelection.set(categoryList[0])
-            self.categoryOption = OptionMenu(self.addProjectFrame, self.categorySelection, *categoryList)
-            self.categoryOption.grid(row = 4, column = 1,pady=6)
+            print("made my var")
+            self.categorySelection.set(self.categoryList[0])
+            print("made my var")
+            self.categories.append(self.categorySelection)
+            self.categoryOption = OptionMenu(self.addProjectFrame, self.categorySelection, *self.categoryList)
+            self.categoryOption.grid(row = 4, column = 1)
+
+            self.addCategoryButton = Button(self.addProjectFrame, text = "Add Project", command = self.addCategory)
+            self.addCategoryButton.grid(row = 5, column = 0)
 
             cursor.execute("SELECT * FROM DESIGNATION;")
             aList = cursor.fetchall()
             designationList = []
             for designation in aList:
                 designationList.append(designation[0])
-            Label(self.addProjectFrame, text = "Designation:",background="gray").grid(row = 5, column = 0)
+            Label(self.addProjectFrame, text = "Designation").grid(row = 6, column = 0)
             self.designationVar = StringVar()
             self.designationVar.set(designationList[0])
             self.designationOption = OptionMenu(self.addProjectFrame, self.designationVar, *designationList)
-            self.designationOption.grid(row = 5, column = 1,pady=6)
+            self.designationOption.grid(row = 6, column = 1)
 
-            Label(self.addProjectFrame, text = "Estimated Number of Students:",background="gray").grid(row = 6, column = 0)
+            Label(self.addProjectFrame, text = "Estimated Number of Students").grid(row = 7, column = 0)
             self.estNumStudentsEntry = Entry(self.addProjectFrame)
-            self.estNumStudentsEntry.grid(row = 6, column = 1,pady=6)
+            self.estNumStudentsEntry.grid(row = 7, column = 1)
 
             cursor.execute("SELECT * FROM MAJOR")
             majorTuple = cursor.fetchall()
             majorList = []
             for major in majorTuple:
                 majorList.append(major[0])
-            Label(self.addProjectFrame, text = "Major Requirement:",background="gray").grid(row = 7, column = 0)
+            Label(self.addProjectFrame, text = "Major Requirement").grid(row = 8, column = 0)
             majorVar = StringVar()
             majorVar.set(majorList[0])
+            self.numOfCategories = 1
             self.projectMajorOption = OptionMenu(self.addProjectFrame, majorVar, *majorList)
-            self.projectMajorOption.grid(row = 7, column = 1,pady=6)
+            self.projectMajorOption.grid(row = 8, column = self.numOfCategories)
 
             yearVar = StringVar()
             yearVar.set("Freshman")
-            Label(self.addProjectFrame, text = "Year Requirement:",background="gray").grid(row = 8, column = 0)
+            Label(self.addProjectFrame, text = "Year Requirement").grid(row = 9, column = 0)
             self.projectYearOption = OptionMenu(self.addProjectFrame, yearVar, "Freshman","Sophomore", "Junior","Senior")
-            self.projectYearOption.grid(row = 8, column = 1,pady=6)
+            self.projectYearOption.grid(row = 9, column = 1)
 
             cursor.execute("SELECT * FROM DEPARTMENT")
             departmentTuple = cursor.fetchall()
             departmentList = []
             for department in departmentTuple:
                 departmentList.append(department[0])
-            Label(self.addProjectFrame, text = "Department Requirement:",background="gray").grid(row = 9, column = 0)
+            Label(self.addProjectFrame, text = "Department Requirement").grid(row = 10, column = 0)
             departmentVar = StringVar()
             departmentVar.set(departmentList[0])
             self.projectDepartmentOption = OptionMenu(self.addProjectFrame, departmentVar, *departmentList)
-            self.projectDepartmentOption.grid(row = 9, column = 1,pady=6)
+            self.projectDepartmentOption.grid(row = 10, column = 1)
     
-            self.addProjectBackButton = Button(self.addProjectFrame, text = "Back",width=15)
-            self.addProjectBackButton.grid(row = 10, column = 0,sticky=W)
-            self.addProjectSubmitButton = Button(self.addProjectFrame, text = "Submit", command = self.submitProject,width=15)
-            self.addProjectSubmitButton.grid(row = 10, column = 1,sticky=E)
+            self.addProjectBackButton = Button(self.addProjectFrame, text = "Back")
+            self.addProjectBackButton.grid(row = 11, column = 0)
+            self.addProjectSubmitButton = Button(self.addProjectFrame, text = "Submit", command = self.submitProject)
+            self.addProjectSubmitButton.grid(row = 12, column = 0)
 
             cursor.close()
             db.close()
@@ -579,12 +633,22 @@ class cs4400Project:
         except:
             print("could not connect to database")
 
+    def addCategory(self):
+        print('add category')
+        self.categories.append(StringVar())
+        self.categories[len(self.categories)-1].set(self.categoryList[0])
+        self.numOfCategories += 1
+        OptionMenu(self.addProjectFrame, self.categories[len(self.categories)-1], *self.categoryList).grid(row = 4, column = self.numOfCategories)
+
     def submitProject(self):
         projectName = self.projectNameEntry.get().strip()
         advisorName = self.advisorNameEntry.get().strip()
         advisorEmail = self.advisorEmailEntry.get().strip()
         description = self.projectDescriptionEntry.get().strip()
+        for i in self.categories:
+            print(i.get())
         print("submitted project")
+
 win = Tk()
 app = cs4400Project(win)
 win.mainloop()
