@@ -566,14 +566,14 @@ class cs4400Project:
             for category in aList:
                 self.categoryList.append(category[0])
             print("populated my category list")
-            Label(self.addProjectFrame, text = "Category").grid(row = 4, column= 0)
+            Label(self.addProjectFrame, text = "Category:",background="gray").grid(row = 4, column= 0)
             self.categorySelection = StringVar()
             print("made my var")
             self.categorySelection.set(self.categoryList[0])
             print("made my var")
             self.categories.append(self.categorySelection)
             self.categoryOption = OptionMenu(self.addProjectFrame, self.categorySelection, *self.categoryList)
-            self.categoryOption.grid(row = 4, column = 1)
+            self.categoryOption.grid(row = 4, column = 1,pady=6)
 
             self.addCategoryButton = Button(self.addProjectFrame, text = "Add Project", command = self.addCategory)
             self.addCategoryButton.grid(row = 5, column = 0)
@@ -583,49 +583,49 @@ class cs4400Project:
             designationList = []
             for designation in aList:
                 designationList.append(designation[0])
-            Label(self.addProjectFrame, text = "Designation").grid(row = 6, column = 0)
+            Label(self.addProjectFrame, text = "Designation:",background="gray").grid(row = 6, column = 0)
             self.designationVar = StringVar()
             self.designationVar.set(designationList[0])
             self.designationOption = OptionMenu(self.addProjectFrame, self.designationVar, *designationList)
-            self.designationOption.grid(row = 6, column = 1)
+            self.designationOption.grid(row = 6, column = 1,pady=6)
 
-            Label(self.addProjectFrame, text = "Estimated Number of Students").grid(row = 7, column = 0)
+            Label(self.addProjectFrame, text = "Estimated Number of Students:",background="gray").grid(row = 7, column = 0)
             self.estNumStudentsEntry = Entry(self.addProjectFrame)
-            self.estNumStudentsEntry.grid(row = 7, column = 1)
+            self.estNumStudentsEntry.grid(row = 7, column = 1,pady=6)
 
             cursor.execute("SELECT * FROM MAJOR")
             majorTuple = cursor.fetchall()
             majorList = []
             for major in majorTuple:
                 majorList.append(major[0])
-            Label(self.addProjectFrame, text = "Major Requirement").grid(row = 8, column = 0)
+            Label(self.addProjectFrame, text = "Major Requirement:",background="gray").grid(row = 8, column = 0)
             majorVar = StringVar()
             majorVar.set(majorList[0])
             self.numOfCategories = 1
             self.projectMajorOption = OptionMenu(self.addProjectFrame, majorVar, *majorList)
-            self.projectMajorOption.grid(row = 8, column = self.numOfCategories)
+            self.projectMajorOption.grid(row = 8, column = self.numOfCategories,pady=6)
 
             yearVar = StringVar()
             yearVar.set("Freshman")
-            Label(self.addProjectFrame, text = "Year Requirement").grid(row = 9, column = 0)
+            Label(self.addProjectFrame, text = "Year Requirement:",background="gray").grid(row = 9, column = 0)
             self.projectYearOption = OptionMenu(self.addProjectFrame, yearVar, "Freshman","Sophomore", "Junior","Senior")
-            self.projectYearOption.grid(row = 9, column = 1)
+            self.projectYearOption.grid(row = 9, column = 1,pady=6)
 
             cursor.execute("SELECT * FROM DEPARTMENT")
             departmentTuple = cursor.fetchall()
             departmentList = []
             for department in departmentTuple:
                 departmentList.append(department[0])
-            Label(self.addProjectFrame, text = "Department Requirement").grid(row = 10, column = 0)
+            Label(self.addProjectFrame, text = "Department Requirement:",background="gray").grid(row = 10, column = 0)
             departmentVar = StringVar()
             departmentVar.set(departmentList[0])
             self.projectDepartmentOption = OptionMenu(self.addProjectFrame, departmentVar, *departmentList)
-            self.projectDepartmentOption.grid(row = 10, column = 1)
+            self.projectDepartmentOption.grid(row = 10, column = 1,pady=6)
     
-            self.addProjectBackButton = Button(self.addProjectFrame, text = "Back")
-            self.addProjectBackButton.grid(row = 11, column = 0)
-            self.addProjectSubmitButton = Button(self.addProjectFrame, text = "Submit", command = self.submitProject)
-            self.addProjectSubmitButton.grid(row = 12, column = 0)
+            self.addProjectBackButton = Button(self.addProjectFrame, text = "Back",width=15)
+            self.addProjectBackButton.grid(row = 11, column = 0,sticky=W)
+            self.addProjectSubmitButton = Button(self.addProjectFrame, text = "Submit", command = self.submitProject,width=15)
+            self.addProjectSubmitButton.grid(row = 11, column = 1,sticky=E)
 
             cursor.close()
             db.close()
@@ -644,7 +644,7 @@ class cs4400Project:
         projectName = self.projectNameEntry.get().strip()
         advisorName = self.advisorNameEntry.get().strip()
         advisorEmail = self.advisorEmailEntry.get().strip()
-        description = self.projectDescriptionEntry.get().strip()
+        description = self.projectDescriptionText.get().strip()
         for i in self.categories:
             print(i.get())
         print("submitted project")
