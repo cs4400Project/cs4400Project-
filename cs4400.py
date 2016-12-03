@@ -68,6 +68,26 @@ class cs4400Project:
 
         #pic2
 
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+
+            #Setting up the major option
+            cursor.execute("SELECT * FROM MAJOR")
+            majorTuple = cursor.fetchall()
+
+            self.majorDict = {}
+            for major in majorTuple:
+                self.majorDict[major[0]] = major[1]
+
+            cursor.close()
+            db.close()
+        except:
+            print("cannot connect to database")
+
 
     def loginCheck(self):
         #check to see if the username and password passed in is in the database
@@ -104,13 +124,13 @@ class cs4400Project:
                     print("login")
                     self.currentUser = realUsername
 
-            else: #username not in database 
+            else: #username not in database
                 messagebox.showerror(title = "Error",message = "Wrong Username!")
             cursor.close()
             db.close()
-        except: #cant connect to database 
+        except: #cant connect to database
             messagebox.showerror(title = "Error",message = "Could not connect to database.")
-            
+
 
     def registerPage(self):
 
@@ -188,7 +208,7 @@ class cs4400Project:
             #2.must be a gatech email
             #3.unique username and email
             #4.passwords must match
-            if(len(password) == 0 or len(username) == 0 or len(email) == 0): #checks if fields have values 
+            if(len(password) == 0 or len(username) == 0 or len(email) == 0): #checks if fields have values
                 messagebox.showerror(title = "Error",message = "No field is allowed to be empty!")
             elif(email[email.index("@")+1:] != "gatech.edu"): #checks if a gatech email
                 messagebox.showerror(title = "Error",message = "Must have a gatech email to register.")
@@ -199,7 +219,7 @@ class cs4400Project:
                 databaseEmail = cursor.fetchall()
                 if(password != confirmPassword): #password and confirm must match
                     messagebox.showerror(title = "Error",message = "Password and Confirm Password must match.")
-                elif len(databaseUser) != 0: #checks if username not taken 
+                elif len(databaseUser) != 0: #checks if username not taken
                     messagebox.showerror(title = "Error",message = "Username already in use.")
                 elif len(databaseEmail) != 0: #checks if email not taken
                     messagebox.showerror(title = "Error",message = "Email already in use.")
@@ -209,7 +229,7 @@ class cs4400Project:
                     data = (username, password, email, "Student")
                     cursor.execute(statement,data)
                     db.commit()
-                    messagebox.showinfo(title = "Success", message = "You have registered a new user!") 
+                    messagebox.showinfo(title = "Success", message = "You have registered a new user!")
                     self.newUser = True
                     self.currentUser = username
                     self.regToEditProfile()
@@ -319,7 +339,7 @@ class cs4400Project:
         lsls.grid(row= 0, column = 0, sticky= E)
         #slspicc
 
-        
+
 
 
     def backToMe(self):
@@ -372,9 +392,7 @@ class cs4400Project:
             #Make a dictionary to hold all of the mappings as well as
             #Make a list of all the majors to have for the dropdown menu
             majorList = []
-            self.majorDict = {}
             for major in majorTuple:
-                self.majorDict[major[0]] = major[1]
                 majorList.append(major[0])
 
             Label(self.editFrame, text = "Major:",background="gray").grid(row = 0, column = 0)
@@ -627,29 +645,31 @@ class cs4400Project:
             majorList = []
             for major in majorTuple:
                 majorList.append(major[0])
-            Label(self.addProjectFrame, text = "Major Requirement:",background="gray").grid(row = 8, column = 0)
-            majorVar = StringVar()
-            majorVar.set(majorList[0])
+            majorList.insert(0, "No Requirement")
+            Label(self.addProjectFrame, text = "Major Requirement").grid(row = 8, column = 0)
+            self.majorVar = StringVar()
+            self.majorVar.set(majorList[0])
             self.numOfCategories = 1
-            self.projectMajorOption = OptionMenu(self.addProjectFrame, majorVar, *majorList)
-            self.projectMajorOption.grid(row = 8, column = self.numOfCategories,pady=6)
+            self.projectMajorOption = OptionMenu(self.addProjectFrame, self.majorVar, *majorList)
+            self.projectMajorOption.grid(row = 8, column = self.numOfCategories)
 
-            yearVar = StringVar()
-            yearVar.set("Freshman")
-            Label(self.addProjectFrame, text = "Year Requirement:",background="gray").grid(row = 9, column = 0)
-            self.projectYearOption = OptionMenu(self.addProjectFrame, yearVar, "Freshman","Sophomore", "Junior","Senior")
-            self.projectYearOption.grid(row = 9, column = 1,pady=6)
+            self.yearVar = StringVar()
+            self.yearVar.set("No Requirement")
+            Label(self.addProjectFrame, text = "Year Requirement").grid(row = 9, column = 0)
+            self.projectYearOption = OptionMenu(self.addProjectFrame, self.yearVar, "No Requirement", "Freshman","Sophomore", "Junior","Senior")
+            self.projectYearOption.grid(row = 9, column = 1)
 
             cursor.execute("SELECT * FROM DEPARTMENT")
             departmentTuple = cursor.fetchall()
             departmentList = []
             for department in departmentTuple:
                 departmentList.append(department[0])
-            Label(self.addProjectFrame, text = "Department Requirement:",background="gray").grid(row = 10, column = 0)
-            departmentVar = StringVar()
-            departmentVar.set(departmentList[0])
-            self.projectDepartmentOption = OptionMenu(self.addProjectFrame, departmentVar, *departmentList)
-            self.projectDepartmentOption.grid(row = 10, column = 1,pady=6)
+            departmentList.insert(0, "No Requirement")
+            Label(self.addProjectFrame, text = "Department Requirement").grid(row = 10, column = 0)
+            self.departmentVar = StringVar()
+            self.departmentVar.set(departmentList[0])
+            self.projectDepartmentOption = OptionMenu(self.addProjectFrame, self.departmentVar, *departmentList)
+            self.projectDepartmentOption.grid(row = 10, column = 1)
     
             self.addProjectBackButton = Button(self.addProjectFrame, text = "Back",width=15)
             self.addProjectBackButton.grid(row = 11, column = 0,sticky=W,pady=6)
@@ -674,10 +694,75 @@ class cs4400Project:
         projectName = self.projectNameEntry.get().strip()
         advisorName = self.advisorNameEntry.get().strip()
         advisorEmail = self.advisorEmailEntry.get().strip()
-        description = self.projectDescriptionText.get().strip()
+        description = self.projectDescriptionEntry.get().strip()
+        designation = self.designationVar.get()
+        categories = []
         for i in self.categories:
-            print(i.get())
-        print("submitted project")
+            categories.append(i.get())
+        categories = set(categories)
+        estNumOfStudents = self.estNumStudentsEntry.get().strip()
+        majorRestriction = self.majorVar.get()
+        yearRestriction = self.yearVar.get()
+        departmentRestriction = self.departmentVar.get()
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("+")
+            cursor = db.cursor()
+            if(projectName != "" and advisorName != "" and advisorEmail != "" and description != "" and estNumOfStudents != ""):
+                print("none of the entry boxes are empty")
+                print(designation)
+                print(majorRestriction)
+                print(departmentRestriction)
+                if(majorRestriction != "No Requirement" and departmentRestriction != "No Requirement"):
+                    print("both don't equal no requirement")
+                    print(self.majorDict[majorRestriction])
+                    if(departmentRestriction == self.majorDict[majorRestriction]):
+                        print("both major and department match")
+                        statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
+                        data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
+                        cursor.execute(statement, data)
+                        db.commit()
+                        print("inserted project")
+                    else:
+                        print("department needs to match major")
+                        return
+                else:
+                    print("one of them is no requirement")
+                    statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
+                    data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
+                    cursor.execute(statement, data)
+                    print("executed")
+                    db.commit()
+                    print("inserted project")
+            else:
+                print("no entry boxes can be empty")
+                return
+            for category in categories:
+                cursor.execute("INSERT INTO PROJECT_IS_CATEGORY (Project_name, Category_name) VALUES (%s, %s);", (projectName, category))
+                db.commit()
+                print("inserted category")
+            if(majorRestriction != "No Requirement"):
+                print("major restriction does not equal")
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, majorRestriction))
+                db.commit()
+                print("inserted major requirement")
+            if(yearRestriction != "No Requirement"):
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, yearRestriction))
+                db.commit()
+                print("inserted year requirement")
+            if(departmentRestriction != "No Requirement"):
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, departmentRestriction))
+                db.commit()
+                print("inserted department restriction")
+
+            cursor.close()
+            db.close()
+
+        except:
+            print("cannot connect to database")
+
 
     def addCourse(self):
         #GUI for add course
@@ -690,7 +775,7 @@ class cs4400Project:
         self.addcoursepic.pack()
 
         #picc SLS
-        courseurl = "http://imageshack.com/a/img923/492/NJ18VG.gif" 
+        courseurl = "http://imageshack.com/a/img923/492/NJ18VG.gif"
         courseresponse = urllib.request.urlopen(courseurl)
         mycoursePicture = courseresponse.read()
         import base64
@@ -699,7 +784,7 @@ class cs4400Project:
         coursel = Label(self.addcoursepic, image = self.coursephoto)
         coursel.grid(row= 0, column = 0, sticky= E)
         #picc SLS
-        
+
         self.addCourseFrame = Frame(self.addCourseWin,background="gray")
         self.addCourseFrame.pack()
         print('made add course frame')
@@ -747,8 +832,8 @@ class cs4400Project:
             self.categories.append(self.categorySelection)
             self.categoryOption = OptionMenu(self.addCourseFrame, self.categorySelection, *self.categoryList)
             self.categoryOption.grid(row = 4, column = 1,pady=6)
-            
-            
+
+
             self.addCourseButton = Button(self.addCourseFrame, text = "Add Course",command= self.addCourseCategory)
             self.addCourseButton.grid(row = 5, column = 0)
             Label(self.addCourseFrame, text = "Estimated Number of Students:",background="gray").grid(row = 6, column = 0)
