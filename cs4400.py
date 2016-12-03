@@ -68,6 +68,26 @@ class cs4400Project:
 
         #pic2
 
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+
+            #Setting up the major option
+            cursor.execute("SELECT * FROM MAJOR")
+            majorTuple = cursor.fetchall()
+
+            self.majorDict = {}
+            for major in majorTuple:
+                self.majorDict[major[0]] = major[1]
+
+            cursor.close()
+            db.close()
+        except:
+            print("cannot connect to database")
+
 
     def loginCheck(self):
         #check to see if the username and password passed in is in the database
@@ -348,9 +368,7 @@ class cs4400Project:
             #Make a dictionary to hold all of the mappings as well as
             #Make a list of all the majors to have for the dropdown menu
             majorList = []
-            self.majorDict = {}
             for major in majorTuple:
-                self.majorDict[major[0]] = major[1]
                 majorList.append(major[0])
 
             Label(self.editFrame, text = "Major:",background="gray").grid(row = 0, column = 0)
@@ -582,17 +600,18 @@ class cs4400Project:
             majorList = []
             for major in majorTuple:
                 majorList.append(major[0])
+            majorList.insert(0, "No Requirement")
             Label(self.addProjectFrame, text = "Major Requirement").grid(row = 8, column = 0)
-            majorVar = StringVar()
-            majorVar.set(majorList[0])
+            self.majorVar = StringVar()
+            self.majorVar.set(majorList[0])
             self.numOfCategories = 1
-            self.projectMajorOption = OptionMenu(self.addProjectFrame, majorVar, *majorList)
+            self.projectMajorOption = OptionMenu(self.addProjectFrame, self.majorVar, *majorList)
             self.projectMajorOption.grid(row = 8, column = self.numOfCategories)
 
-            yearVar = StringVar()
-            yearVar.set("Freshman")
+            self.yearVar = StringVar()
+            self.yearVar.set("No Requirement")
             Label(self.addProjectFrame, text = "Year Requirement").grid(row = 9, column = 0)
-            self.projectYearOption = OptionMenu(self.addProjectFrame, yearVar, "Freshman","Sophomore", "Junior","Senior")
+            self.projectYearOption = OptionMenu(self.addProjectFrame, self.yearVar, "No Requirement", "Freshman","Sophomore", "Junior","Senior")
             self.projectYearOption.grid(row = 9, column = 1)
 
             cursor.execute("SELECT * FROM DEPARTMENT")
@@ -600,10 +619,11 @@ class cs4400Project:
             departmentList = []
             for department in departmentTuple:
                 departmentList.append(department[0])
+            departmentList.insert(0, "No Requirement")
             Label(self.addProjectFrame, text = "Department Requirement").grid(row = 10, column = 0)
-            departmentVar = StringVar()
-            departmentVar.set(departmentList[0])
-            self.projectDepartmentOption = OptionMenu(self.addProjectFrame, departmentVar, *departmentList)
+            self.departmentVar = StringVar()
+            self.departmentVar.set(departmentList[0])
+            self.projectDepartmentOption = OptionMenu(self.addProjectFrame, self.departmentVar, *departmentList)
             self.projectDepartmentOption.grid(row = 10, column = 1)
     
             self.addProjectBackButton = Button(self.addProjectFrame, text = "Back")
@@ -629,9 +649,74 @@ class cs4400Project:
         advisorName = self.advisorNameEntry.get().strip()
         advisorEmail = self.advisorEmailEntry.get().strip()
         description = self.projectDescriptionEntry.get().strip()
+        designation = self.designationVar.get()
+        categories = []
         for i in self.categories:
-            print(i.get())
-        print("submitted project")
+            categories.append(i.get())
+        categories = set(categories)
+        estNumOfStudents = self.estNumStudentsEntry.get().strip()
+        majorRestriction = self.majorVar.get()
+        yearRestriction = self.yearVar.get()
+        departmentRestriction = self.departmentVar.get()
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("+")
+            cursor = db.cursor()
+            if(projectName != "" and advisorName != "" and advisorEmail != "" and description != "" and estNumOfStudents != ""):
+                print("none of the entry boxes are empty")
+                print(designation)
+                print(majorRestriction)
+                print(departmentRestriction)
+                if(majorRestriction != "No Requirement" and departmentRestriction != "No Requirement"):
+                    print("both don't equal no requirement")
+                    print(self.majorDict[majorRestriction])
+                    if(departmentRestriction == self.majorDict[majorRestriction]):
+                        print("both major and department match")
+                        statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
+                        data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
+                        cursor.execute(statement, data)
+                        db.commit()
+                        print("inserted project")
+                    else:
+                        print("department needs to match major")
+                        return
+                else:
+                    print("one of them is no requirement")
+                    statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
+                    data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
+                    cursor.execute(statement, data)
+                    print("executed")
+                    db.commit()
+                    print("inserted project")
+            else:
+                print("no entry boxes can be empty")
+                return
+            for category in categories:
+                cursor.execute("INSERT INTO PROJECT_IS_CATEGORY (Project_name, Category_name) VALUES (%s, %s);", (projectName, category))
+                db.commit()
+                print("inserted category")
+            if(majorRestriction != "No Requirement"):
+                print("major restriction does not equal")
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, majorRestriction))
+                db.commit()
+                print("inserted major requirement")
+            if(yearRestriction != "No Requirement"):
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, yearRestriction))
+                db.commit()
+                print("inserted year requirement")
+            if(departmentRestriction != "No Requirement"):
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, departmentRestriction))
+                db.commit()
+                print("inserted department restriction")
+
+            cursor.close()
+            db.close()
+
+        except:
+            print("cannot connect to database")
+
 
     def addCourse(self):
         #GUI for add course
