@@ -92,8 +92,8 @@ class cs4400Project:
                 print(realUsername)
                 realPassword = aList[0][1]
                 print(realPassword)
-                if (realPassword != password):
-                    print("wrong password")
+                if (realPassword != password):  #checks if password is correct
+                    messagebox.showerror(title = "Error",message = "Wrong Password!")
                 else:
                     
                     if(aList[0][2] == "Admin"):
@@ -104,12 +104,13 @@ class cs4400Project:
                     print("login")
                     self.currentUser = realUsername
 
-            else:
-                print("wrong username")
+            else: #username not in database 
+                messagebox.showerror(title = "Error",message = "Wrong Username!")
             cursor.close()
             db.close()
-        except:
-             print("could not connect to database")
+        except: #cant connect to database 
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
+            
 
     def registerPage(self):
 
@@ -187,35 +188,35 @@ class cs4400Project:
             #2.must be a gatech email
             #3.unique username and email
             #4.passwords must match
-            if(len(password) == 0 or len(username) == 0 or len(email) == 0):
-                print("none of the fields above can be empty")
-            elif(email[email.index("@")+1:] != "gatech.edu"):
-                print("must have a gatech email")
+            if(len(password) == 0 or len(username) == 0 or len(email) == 0): #checks if fields have values 
+                messagebox.showerror(title = "Error",message = "No field is allowed to be empty!")
+            elif(email[email.index("@")+1:] != "gatech.edu"): #checks if a gatech email
+                messagebox.showerror(title = "Error",message = "Must have a gatech email to register.")
             else:
                 cursor.execute("SELECT Username FROM USER WHERE Username = %s",(username,))
                 databaseUser = cursor.fetchall()
                 cursor.execute("SELECT Email FROM USER WHERE Email = %s",(email,))
                 databaseEmail = cursor.fetchall()
-                if(password != confirmPassword):
-                    print("passwords must match")
-                elif len(databaseUser) != 0:
-                    print("username already taken")
-                elif len(databaseEmail) != 0:
-                    print("email already taken")
+                if(password != confirmPassword): #password and confirm must match
+                    messagebox.showerror(title = "Error",message = "Password and Confirm Password must match.")
+                elif len(databaseUser) != 0: #checks if username not taken 
+                    messagebox.showerror(title = "Error",message = "Username already in use.")
+                elif len(databaseEmail) != 0: #checks if email not taken
+                    messagebox.showerror(title = "Error",message = "Email already in use.")
                 else:
                     #If everything works then we insert the new user into the database
                     statement = "INSERT INTO USER (Username, Password, Email, UserType) values (%s, %s, %s, %s)"
                     data = (username, password, email, "Student")
                     cursor.execute(statement,data)
                     db.commit()
-                    print("You have registered a user")
+                    messagebox.showinfo(title = "Success", message = "You have registered a new user!") 
                     self.newUser = True
                     self.currentUser = username
                     self.regToEditProfile()
             cursor.close()
             db.close()
-        except:
-            print("could not connect to database")
+        except: #cannot connect to database
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
         
     def regToEditProfile(self):
         #If the register is successful, then the register window will close
@@ -292,10 +293,33 @@ class cs4400Project:
         #Has 2 buttons, Edit Profile and My Applications 
         self.editProfileButton = Button(self.meFrame, text = "Edit Profile", command = self.toEditProfile)
         self.editProfileButton.grid(row = 0, column = 0, padx = 20, pady = 10)
-        self.myApplicationButton = Button(self.meFrame, text = "My Application")
+        self.myApplicationButton = Button(self.meFrame, text = "My Application",command = self.viewmyApp)
         self.myApplicationButton.grid(row = 2, column = 0, padx = 20, pady = 10)
         self.backButton = Button(self.meFrame, text = "Back", command = self.backToMe)
         self.backButton.grid(row = 4, column = 0, padx = 20, pady = 10)
+
+    def viewmyApp(self):
+        self.meWin.withdraw()
+        self.viewmyApp = Toplevel()
+        self.viewmyApp.title("My Applications")
+        self.viewmyApp.configure(background="gray")
+
+        self.apppicFrame =Frame(self.viewmyApp,background="gray")
+        self.apppicFrame.pack()
+
+        ###slspic
+
+        urlsls = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        responsesls = urllib.request.urlopen(urlsls)
+        myPicturesls = responsesls.read()
+        import base64
+        b64_datasls = base64.encodebytes(myPicturesls)
+        self.photosls = PhotoImage(data=b64_datasls)
+        lsls = Label(self.apppicFrame, image = self.photosls)
+        lsls.grid(row= 0, column = 0, sticky= E)
+        #slspicc
+
+        
 
 
     def backToMe(self):
@@ -394,6 +418,7 @@ class cs4400Project:
             cursor.close()
             db.close()
         except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
             print("could not connect to database")
 
 
@@ -420,6 +445,7 @@ class cs4400Project:
             ##self.departmentLabel = Label(self.editFrame, text = self.departmentVar.get())
             ##self.departmentLabel.grid(row = 2, column = 1)
         except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
             print("cannot connect to database")
 
     def changeYear(self, year):
@@ -436,6 +462,7 @@ class cs4400Project:
             cursor.close()
             db.close()
         except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
             print("cannot connect to database")
 
     def editToWelcome(self):
@@ -625,14 +652,15 @@ class cs4400Project:
             self.projectDepartmentOption.grid(row = 10, column = 1,pady=6)
     
             self.addProjectBackButton = Button(self.addProjectFrame, text = "Back",width=15)
-            self.addProjectBackButton.grid(row = 11, column = 0,sticky=W)
+            self.addProjectBackButton.grid(row = 11, column = 0,sticky=W,pady=6)
             self.addProjectSubmitButton = Button(self.addProjectFrame, text = "Submit", command = self.submitProject,width=15)
-            self.addProjectSubmitButton.grid(row = 11, column = 1,sticky=E)
+            self.addProjectSubmitButton.grid(row = 11, column = 1,sticky=E,pady=6)
 
             cursor.close()
             db.close()
         
         except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
             print("could not connect to database")
 
     def addProjectCategory(self):
@@ -656,32 +684,88 @@ class cs4400Project:
         print('add course')
         self.addCourseWin = Toplevel()
         self.addCourseWin.title("Add Course")
-        self.addCourseFrame = Frame(self.addCourseWin)
+        self.addCourseWin.configure(background="gray")
+
+        self.addcoursepic = Frame(self.addCourseWin,background="gray")
+        self.addcoursepic.pack()
+
+        #picc SLS
+        courseurl = "http://imageshack.com/a/img923/492/NJ18VG.gif" 
+        courseresponse = urllib.request.urlopen(courseurl)
+        mycoursePicture = courseresponse.read()
+        import base64
+        courseb64_data = base64.encodebytes(mycoursePicture)
+        self.coursephoto = PhotoImage(data=courseb64_data)
+        coursel = Label(self.addcoursepic, image = self.coursephoto)
+        coursel.grid(row= 0, column = 0, sticky= E)
+        #picc SLS
+        
+        self.addCourseFrame = Frame(self.addCourseWin,background="gray")
         self.addCourseFrame.pack()
         print('made add course frame')
-        Label(self.addCourseFrame, text = "Course Number").grid(row = 0, column = 0)
+        Label(self.addCourseFrame, text = "Course Number:",background="gray").grid(row = 0, column = 0)
         self.courseNumberEntry = Entry(self.addCourseFrame)
-        self.courseNumberEntry.grid(row = 0, column = 1)
-        Label(self.addCourseFrame, text = "Course Name").grid(row = 1, column = 0)
+        self.courseNumberEntry.grid(row = 0, column = 1,pady=6)
+        Label(self.addCourseFrame, text = "Course Name:",background="gray").grid(row = 1, column = 0)
         self.courseNameEntry = Entry(self.addCourseFrame)
-        self.courseNameEntry.grid(row = 1, column = 1)
-        Label(self.addCourseFrame, text = "Instructor").grid(row = 2, column = 0)
+        self.courseNameEntry.grid(row = 1, column = 1,pady=6)
+        Label(self.addCourseFrame, text = "Instructor:",background="gray").grid(row = 2, column = 0)
         self.courseInstructorEntry = Entry(self.addCourseFrame)
-        self.courseInstructorEntry.grid(row = 2, column = 1)
-        Label(self.addCourseFrame, text = "Designation").grid(row = 3, column = 0)
-        
-        Label(self.addCourseFrame, text = "Category").grid(row = 4, column = 0)
-        
-        self.addCourseButton = Button(self.addCourseFrame, text = "Add Course",command= self.addCourseCategory)
-        self.addCourseButton.grid(row = 5, column = 0)
-        Label(self.addCourseFrame, text = "Estimated Number of Students").grid(row = 6, column = 0)
-        self.courseEstNumOfStudents = Entry(self.addCourseFrame)
-        self.courseEstNumOfStudents.grid(row = 6, column = 1)
+        self.courseInstructorEntry.grid(row = 2, column = 1,pady=6)
 
-        self.courseBackButton = Button(self.addCourseFrame, text = "Back")
-        self.courseBackButton.grid(row = 7, column = 0)
-        self.courseSubmitButton = Button(self.addCourseFrame, text = "Submit")
-        self.courseSubmitButton.grid(row = 8, column = 0)
+        
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5", passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+
+        #if connected, Designation and Categories:
+            cursor.execute("SELECT * FROM DESIGNATION;")
+            aList = cursor.fetchall()
+            designationList = []
+            for designation in aList:
+                designationList.append(designation[0])
+            Label(self.addCourseFrame, text = "Designation:",background="gray").grid(row = 3, column = 0)
+            self.designationVar = StringVar()
+            self.designationVar.set(designationList[0])
+            self.designationOption = OptionMenu(self.addCourseFrame, self.designationVar, *designationList)
+            self.designationOption.grid(row = 3, column = 1,pady=6)
+
+            self.categories = []
+            cursor.execute("SELECT * FROM CATEGORY;")
+            aList = cursor.fetchall()
+            self.categoryList = []
+            for category in aList:
+                self.categoryList.append(category[0])
+            print("populated my category list")
+            Label(self.addCourseFrame, text = "Category:",background="gray").grid(row = 4, column= 0)
+            self.categorySelection = StringVar()
+            print("made my var")
+            self.categorySelection.set(self.categoryList[0])
+            print("made my var")
+            self.categories.append(self.categorySelection)
+            self.categoryOption = OptionMenu(self.addCourseFrame, self.categorySelection, *self.categoryList)
+            self.categoryOption.grid(row = 4, column = 1,pady=6)
+            
+            
+            self.addCourseButton = Button(self.addCourseFrame, text = "Add Course",command= self.addCourseCategory)
+            self.addCourseButton.grid(row = 5, column = 0)
+            Label(self.addCourseFrame, text = "Estimated Number of Students:",background="gray").grid(row = 6, column = 0)
+            self.courseEstNumOfStudents = Entry(self.addCourseFrame)
+            self.courseEstNumOfStudents.grid(row = 6, column = 1,pady=6)
+
+            self.courseBackButton = Button(self.addCourseFrame, text = "Back",width=15)
+            self.courseBackButton.grid(row = 7, column = 0,sticky=W,pady=6)
+            self.courseSubmitButton = Button(self.addCourseFrame, text = "Submit",width=15)
+            self.courseSubmitButton.grid(row = 7, column = 1,sticky=E,pady=6)
+
+            cursor.close()
+            db.close()
+
+        except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
+            print("could not connect to database")
 
 
     def addCourseCategory(self):
