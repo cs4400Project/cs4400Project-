@@ -313,19 +313,26 @@ class cs4400Project:
         #Has 2 buttons, Edit Profile and My Applications 
         self.editProfileButton = Button(self.meFrame, text = "Edit Profile", command = self.toEditProfile)
         self.editProfileButton.grid(row = 0, column = 0, padx = 20, pady = 10)
-        self.myApplicationButton = Button(self.meFrame, text = "My Application",command = self.viewmyApp)
+        print("adding button")
+        self.myApplicationButton = Button(self.meFrame, text = "My Application",command = self.viewmyAppFunc)
         self.myApplicationButton.grid(row = 2, column = 0, padx = 20, pady = 10)
         self.backButton = Button(self.meFrame, text = "Back", command = self.backToMe)
         self.backButton.grid(row = 4, column = 0, padx = 20, pady = 10)
 
-    def viewmyApp(self):
-        self.meWin.withdraw()
+        
+
+    def viewmyAppFunc(self):
+        self.meWin.destroy()
         self.viewmyApp = Toplevel()
         self.viewmyApp.title("My Applications")
         self.viewmyApp.configure(background="gray")
 
         self.apppicFrame =Frame(self.viewmyApp,background="gray")
         self.apppicFrame.pack()
+
+        self.viewmyAppFrame = Frame(self.viewmyApp,background="grey")
+        self.viewmyAppFrame.pack()
+
 
         ###slspic
 
@@ -339,11 +346,73 @@ class cs4400Project:
         lsls.grid(row= 0, column = 0, sticky= E)
         #slspicc
 
+        print(self.currentUser)
+
+        Label(self.viewmyAppFrame, text = "Date",background="gray").grid(row = 0, column = 0)
+        Label(self.viewmyAppFrame, text = "Project Name",background="gray").grid(row = 0, column =1)
+        Label(self.viewmyAppFrame, text = "Status",background="gray").grid(row = 0, column = 2)
+
+
+        newF = Frame(self.viewmyApp)
+        newF.pack()
+
+        self.backFrame= Frame(self.viewmyApp,background="gray")
+        self.backFrame.pack()
+
+        
+        try:
+            #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                             passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+
+            cursor.execute("SELECT Date,pName,Status FROM APPLY WHERE sName = %s",(self.currentUser,))
+            data = cursor.fetchall()
+            print(data)
+            print(len(data))
+
+            scrollbar = Scrollbar(newF)
+            scrollbar.pack(side=RIGHT, fill =Y)
+
+            listbox1 = Listbox(newF, yscrollcommand=scrollbar.set)
+            listbox2 = Listbox(newF, yscrollcommand=scrollbar.set)
+            listbox3 = Listbox(newF, yscrollcommand=scrollbar.set)
 
 
 
+            for t in data:
+                print(t)
+                listbox1.insert(END,str(t[0]))
+                listbox2.insert(END,str(t[1]))
+                listbox3.insert(END,str(t[2]))
+            listbox1.pack(side=LEFT,fill=BOTH)
+            listbox2.pack(side=LEFT,fill=BOTH)
+            listbox3.pack(side=RIGHT,fill=BOTH)
+                                            
+            listboxes = [listbox1,listbox2,listbox3]
+
+            def onVSB(*args):
+                for lb in listboxes:
+                    lb.yview(*args)
+
+            scrollbar.config(command = onVSB)
+            cursor.close()
+            db.close()
+        except:
+            #cannot connect to database
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
+        
+        self.backButton = Button(self.backFrame, text = "Back",width =13,command=self.backtoMeMain)
+        self.backButton.grid(row = 0, column = 0, padx = 20, pady = 10)
+
+
+    def backtoMeMain(self):
+        self.viewmyApp.destroy()
+        self.meWindow()
+        
     def backToMe(self):
-        self.meWin.withdraw()
+        self.meWin.destroy()
         self.welcomeScreen()
 
     def toEditProfile(self):
@@ -646,18 +715,18 @@ class cs4400Project:
             for major in majorTuple:
                 majorList.append(major[0])
             majorList.insert(0, "No Requirement")
-            Label(self.addProjectFrame, text = "Major Requirement").grid(row = 8, column = 0)
+            Label(self.addProjectFrame, text = "Major Requirement:",background="gray").grid(row = 8, column = 0)
             self.majorVar = StringVar()
             self.majorVar.set(majorList[0])
             self.numOfCategories = 1
             self.projectMajorOption = OptionMenu(self.addProjectFrame, self.majorVar, *majorList)
-            self.projectMajorOption.grid(row = 8, column = self.numOfCategories)
+            self.projectMajorOption.grid(row = 8, column = 1,pady=6) #column=self.numOfCategories 
 
             self.yearVar = StringVar()
             self.yearVar.set("No Requirement")
-            Label(self.addProjectFrame, text = "Year Requirement").grid(row = 9, column = 0)
+            Label(self.addProjectFrame, text = "Year Requirement:",background="gray").grid(row = 9, column = 0)
             self.projectYearOption = OptionMenu(self.addProjectFrame, self.yearVar, "No Requirement", "Freshman","Sophomore", "Junior","Senior")
-            self.projectYearOption.grid(row = 9, column = 1)
+            self.projectYearOption.grid(row = 9, column = 1,pady=6)
 
             cursor.execute("SELECT * FROM DEPARTMENT")
             departmentTuple = cursor.fetchall()
@@ -665,11 +734,11 @@ class cs4400Project:
             for department in departmentTuple:
                 departmentList.append(department[0])
             departmentList.insert(0, "No Requirement")
-            Label(self.addProjectFrame, text = "Department Requirement").grid(row = 10, column = 0)
+            Label(self.addProjectFrame, text = "Department Requirement:",background="gray").grid(row = 10, column = 0)
             self.departmentVar = StringVar()
             self.departmentVar.set(departmentList[0])
             self.projectDepartmentOption = OptionMenu(self.addProjectFrame, self.departmentVar, *departmentList)
-            self.projectDepartmentOption.grid(row = 10, column = 1)
+            self.projectDepartmentOption.grid(row = 10, column = 1,pady=6)
     
             self.addProjectBackButton = Button(self.addProjectFrame, text = "Back",width=15)
             self.addProjectBackButton.grid(row = 11, column = 0,sticky=W,pady=6)
@@ -694,7 +763,7 @@ class cs4400Project:
         projectName = self.projectNameEntry.get().strip()
         advisorName = self.advisorNameEntry.get().strip()
         advisorEmail = self.advisorEmailEntry.get().strip()
-        description = self.projectDescriptionEntry.get().strip()
+        description = self.projectDescriptionText.get("1.0",END)
         designation = self.designationVar.get()
         categories = []
         for i in self.categories:
