@@ -539,6 +539,8 @@ class cs4400Project:
 
 
     def CFToViewApp(self):
+        self.chooseFunctionalityWin.withdraw()
+        self.viewApplications()
         print("View App")
 
     def CFToViewPopPro(self):
@@ -560,6 +562,64 @@ class cs4400Project:
         self.chooseFunctionalityWin.withdraw()
         self.rootwin.iconify()
         print("logged out")
+
+    def viewApplications(self):
+
+        self.viewApplicationsWin = Toplevel()
+        self.viewApplicationsWin.title("View Applications")
+
+        self.viewApplicationsFrame = Frame(self.viewApplicationsWin)
+        self.viewApplicationsFrame.pack()
+
+        newFrame = Frame(self.viewApplicationsWin)
+        newFrame.pack()
+
+        scrollbar = Scrollbar(newFrame)
+        scrollbar.pack(side = RIGHT, fill = Y)
+
+        listbox = Listbox(newFrame, yscrollcommand=scrollbar.set)
+        listbox2 = Listbox(newFrame, yscrollcommand=scrollbar.set)
+        listbox3 = Listbox(newFrame, yscrollcommand=scrollbar.set)
+        listbox4 = Listbox(newFrame, yscrollcommand=scrollbar.set)
+
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+            cursor.execute("SELECT pName, Major, Year, Status FROM APPLY JOIN USER WHERE sName=Username;")
+            tuples = cursor.fetchall()
+            print(tuples)
+            for i in tuples:
+                print(i)
+                listbox.insert(END, str(i[0]))
+                listbox2.insert(END, str(i[1]))
+                listbox3.insert(END, str(i[2]))
+                listbox4.insert(END, str(i[3]))
+            listbox.pack(side=LEFT, fill=BOTH)
+            listbox2.pack(side=LEFT, fill=BOTH)
+            listbox3.pack(side=LEFT, fill=BOTH)
+            listbox4.pack(side=LEFT, fill=BOTH)
+
+            listboxes = [listbox,listbox2,listbox3,listbox4]
+
+            def onVSB(*args):
+                for lb in listboxes:
+                    lb.yview(*args)
+
+            scrollbar.config(command=onVSB)
+
+            bottomFrame = Frame(self.viewApplicationsWin)
+            bottomFrame.pack()
+
+            self.acceptButton = Button(bottomFrame, 
+
+            cursor.close()
+            db.close()
+        except:
+            print("can not connect to database")
+        
 
     def addProject(self):
 
@@ -619,10 +679,11 @@ class cs4400Project:
             self.categorySelection.set(self.categoryList[0])
             print("made my var")
             self.categories.append(self.categorySelection)
+            self.numOfCategories = 1
             self.categoryOption = OptionMenu(self.addProjectFrame, self.categorySelection, *self.categoryList)
             self.categoryOption.grid(row = 4, column = 1,pady=6)
 
-            self.addCategoryButton = Button(self.addProjectFrame, text = "Add Project", command = self.addProjectCategory)
+            self.addCategoryButton = Button(self.addProjectFrame, text = "Add Category", command = self.addProjectCategory)
             self.addCategoryButton.grid(row = 5, column = 0)
 
             cursor.execute("SELECT * FROM DESIGNATION;")
@@ -649,9 +710,8 @@ class cs4400Project:
             Label(self.addProjectFrame, text = "Major Requirement").grid(row = 8, column = 0)
             self.majorVar = StringVar()
             self.majorVar.set(majorList[0])
-            self.numOfCategories = 1
             self.projectMajorOption = OptionMenu(self.addProjectFrame, self.majorVar, *majorList)
-            self.projectMajorOption.grid(row = 8, column = self.numOfCategories)
+            self.projectMajorOption.grid(row = 8, column = 1)
 
             self.yearVar = StringVar()
             self.yearVar.set("No Requirement")
@@ -671,7 +731,7 @@ class cs4400Project:
             self.projectDepartmentOption = OptionMenu(self.addProjectFrame, self.departmentVar, *departmentList)
             self.projectDepartmentOption.grid(row = 10, column = 1)
     
-            self.addProjectBackButton = Button(self.addProjectFrame, text = "Back",width=15)
+            self.addProjectBackButton = Button(self.addProjectFrame, text = "Back",width=15, command = self.addProToFunctionality)
             self.addProjectBackButton.grid(row = 11, column = 0,sticky=W,pady=6)
             self.addProjectSubmitButton = Button(self.addProjectFrame, text = "Submit", command = self.submitProject,width=15)
             self.addProjectSubmitButton.grid(row = 11, column = 1,sticky=E,pady=6)
@@ -826,23 +886,24 @@ class cs4400Project:
             print("populated my category list")
             Label(self.addCourseFrame, text = "Category:",background="gray").grid(row = 4, column= 0)
             self.categorySelection = StringVar()
-            print("made my var")
             self.categorySelection.set(self.categoryList[0])
             print("made my var")
             self.categories.append(self.categorySelection)
+            self.numOfCategories = 1
             self.categoryOption = OptionMenu(self.addCourseFrame, self.categorySelection, *self.categoryList)
             self.categoryOption.grid(row = 4, column = 1,pady=6)
 
 
-            self.addCourseButton = Button(self.addCourseFrame, text = "Add Course",command= self.addCourseCategory)
-            self.addCourseButton.grid(row = 5, column = 0)
+
+            self.addCourseCategoryButton = Button(self.addCourseFrame, text = "Add Category",command= self.addCourseCategory)
+            self.addCourseCategoryButton.grid(row = 5, column = 0)
             Label(self.addCourseFrame, text = "Estimated Number of Students:",background="gray").grid(row = 6, column = 0)
             self.courseEstNumOfStudents = Entry(self.addCourseFrame)
             self.courseEstNumOfStudents.grid(row = 6, column = 1,pady=6)
 
-            self.courseBackButton = Button(self.addCourseFrame, text = "Back",width=15)
+            self.courseBackButton = Button(self.addCourseFrame, text = "Back",width=15,command = self.addCourseToFunctionality)
             self.courseBackButton.grid(row = 7, column = 0,sticky=W,pady=6)
-            self.courseSubmitButton = Button(self.addCourseFrame, text = "Submit",width=15)
+            self.courseSubmitButton = Button(self.addCourseFrame, text = "Submit",width=15, command = self.submitCourse)
             self.courseSubmitButton.grid(row = 7, column = 1,sticky=E,pady=6)
 
             cursor.close()
@@ -854,7 +915,57 @@ class cs4400Project:
 
 
     def addCourseCategory(self):
-        print("added Course")
+        print('add category')
+        self.categories.append(StringVar())
+        self.categories[len(self.categories)-1].set(self.categoryList[0])
+        self.numOfCategories += 1
+        OptionMenu(self.addCourseFrame, self.categories[len(self.categories)-1], *self.categoryList).grid(row = 4, column = self.numOfCategories)
+
+    def submitCourse(self):
+        categories = []
+        for i in self.categories:
+            categories.append(i.get())
+        categories = set(categories)
+        courseNumber = self.courseNumberEntry.get()
+        courseName = self.courseNameEntry.get()
+        instructor = self.courseInstructorEntry.get()
+        designation = self.designationVar.get()
+        estNumofStudents = self.courseEstNumOfStudents.get()
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5", passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+
+            if(courseNumber != "" and courseName != "" and instructor != "" and estNumofStudents != ""):
+                cursor.execute("INSERT INTO COURSE (Name, CourseNum, Instructor, EstNumofStud, Designation) VALUES (%s,%s,%s,%s,%s);",(courseName, courseNumber, instructor, estNumofStudents, designation))
+                db.commit()
+                print("inserted course")
+            else:
+                print("entries can not be empty")
+                return
+
+            for category in categories:
+                cursor.execute("INSERT INTO COURSE_IS_CATEGORY (Course_name, Category_name) VALUES (%s, %s);",(courseName, category))
+                db.commit()
+
+            cursor.close()
+            db.close()
+            
+        except:
+            print("can not connect to database")
+
+
+    def addProToFunctionality(self):
+        self.addProjectWin.withdraw()
+        self.chooseFunctionality()
+
+    def addCourseToFunctionality(self):
+        self.addCourseWin.withdraw()
+        self.chooseFunctionality()
+
+        
+        
 
 win = Tk()
 app = cs4400Project(win)
