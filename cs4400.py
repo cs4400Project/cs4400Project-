@@ -277,9 +277,126 @@ class cs4400Project:
         #Me Button
         self.meButton = Button(self.welcomeFrame, text = "My Profile", command = self.meWindow)
         self.meButton.grid(row = 0, column = 0, padx = 20, pady = 20)
-        self.logoutButton = Button(self.welcomeFrame, text = "Log Out", command = self.logoutMe)
-        self.logoutButton.grid(row = 2, column = 0, padx = 20, pady = 20)
+        Label(self.welcomeFrame, text = "Main Page").grid(row = 0, column = 1)
+        Label(self.welcomeFrame, text = "Title").grid(row = 1, column = 0)
+        self.welcomeTitleEntry = Entry(self.welcomeFrame)
+        self.welcomeTitleEntry.grid(row = 1, column = 1)
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+            Label(self.welcomeFrame, text = "Category").grid(row = 2, column = 0)
+            self.categories = []
+            self.optionMenus = []
+            cursor.execute("SELECT * FROM CATEGORY;")
+            aList = cursor.fetchall()
+            self.categoryList = []
+            for category in aList:
+                self.categoryList.append(category[0])
+            self.categoryList.insert(0,"Please Select")
+            print("populated my category list")
+            self.categorySelection = StringVar()
+            print("made my var")
+            self.categorySelection.set(self.categoryList[0])
+            self.categories.append(self.categorySelection)
+            self.numOfCategories = 1
+            categoryOption = OptionMenu(self.welcomeFrame, self.categorySelection, *self.categoryList)
+            categoryOption.grid(row = 2, column = 1,pady=6)
 
+            addCategoryButton = Button(self.welcomeFrame, text = "Add a Category", command = self.mainPageAddCategory)
+            addCategoryButton.grid(row = 3, column = 0)
+            
+            Label(self.welcomeFrame, text = "Designation").grid(row = 4, column = 0)
+            cursor.execute("SELECT * FROM DESIGNATION;")
+            aList = cursor.fetchall()
+            designationList = []
+            for designation in aList:
+                designationList.append(designation[0])
+            designationList.insert(0,"Please Select")
+            self.welcomeDesignationVar = StringVar()
+            self.welcomeDesignationVar.set(designationList[0])
+            designationOption = OptionMenu(self.welcomeFrame, self.welcomeDesignationVar, *designationList)
+            designationOption.grid(row = 4, column = 1,pady=6)
+            
+            Label(self.welcomeFrame, text = "Major").grid(row = 4, column = 2)
+            cursor.execute("SELECT * FROM MAJOR")
+            majorTuple = cursor.fetchall()
+            majorList = []
+            for major in majorTuple:
+                majorList.append(major[0])
+            majorList.insert(0, "Please Select")
+            self.welcomeMajorVar = StringVar()
+            self.welcomeMajorVar.set(majorList[0])
+            majorOption = OptionMenu(self.welcomeFrame, self.welcomeMajorVar, *majorList)
+            majorOption.grid(row = 4, column = 3,pady=6)
+            
+            Label(self.welcomeFrame, text = "Year").grid(row = 4, column = 4)
+            self.welcomeYearVar = StringVar()
+            self.welcomeYearVar.set("Please Select")
+            yearOption = OptionMenu(self.welcomeFrame, self.welcomeYearVar, "Please Select", "Freshman","Sophomore", "Junior","Senior")
+            yearOption.grid(row = 4, column = 5,pady=6)
+
+            self.filterRadio = StringVar()
+            self.radio1 = Radiobutton(self.welcomeFrame, text = "Project", variable = self.filterRadio, value = "Project")
+            self.radio1.grid(row = 5, column = 0)
+            radio2 = Radiobutton(self.welcomeFrame, text = "Course", variable = self.filterRadio, value = "Course")
+            radio2.grid(row = 5, column = 1)
+            radio3 = Radiobutton(self.welcomeFrame, text = "Both", variable = self.filterRadio, value = "Both")
+            radio3.grid(row = 5, column = 2)
+            self.radio1.select()
+
+            applyFilterButton = Button(self.welcomeFrame, text = "Apply Filter")
+            applyFilterButton.grid(row = 6, column = 0)
+            resetFilterButton = Button(self.welcomeFrame, text = "Reset Filter", command = self.resetFilter)
+            resetFilterButton.grid(row = 6, column = 1)
+
+            tableFrame = Frame(self.welcomeWin)
+            tableFrame.pack()
+
+            scrollbar = Scrollbar(tableFrame)
+            scrollbar.pack(side = RIGHT, fill = Y)
+
+            #self.nameBox = Listbox(tableFrame, yscrollcommand=scrollbar.set)
+            #self.typeBox = 
+
+            
+        
+        #self.logoutButton = Button(self.welcomeFrame, text = "Log Out", command = self.logoutMe)
+        #self.logoutButton.grid(row = 2, column = 0, padx = 20, pady = 20)
+
+            cursor.close()
+            db.close()
+
+        except:
+            print("cannot connect to database")
+
+    def mainPageAddCategory(self):
+        self.categories.append(StringVar())
+        self.categories[len(self.categories)-1].set(self.categoryList[0])
+        self.numOfCategories += 1
+        self.optionMenus.append(OptionMenu(self.welcomeFrame, self.categories[len(self.categories)-1], *self.categoryList))
+        self.optionMenus[len(self.optionMenus)-1].grid(row = 2, column = self.numOfCategories)
+
+    def resetFilter(self):
+        print("reset")
+        self.welcomeTitleEntry.delete(0, 'end')
+        self.welcomeDesignationVar.set("Please Select")
+        self.welcomeMajorVar.set("Please Select")
+        self.welcomeYearVar.set("Please Select")
+        for OM in self.optionMenus:
+            OM.grid_forget()
+        self.optionMenus = []
+        self.categorySelection.set("Please Select")
+        self.categories = []
+        self.categories.append(self.categorySelection)
+        self.numOfCategories = 1
+            
+        self.radio1.select()
+        
+        
+        
     def logoutMe(self):
         self.welcomeWin.withdraw()
         self.rootwin.iconify()
@@ -792,10 +909,10 @@ class cs4400Project:
             print("connected")
             cursor = db.cursor()
             if(status == "Pending"):
-                cursor.execute("UPDATE APPLY SET Status = 'Approved' WHERE Name = %s;", (projectName,))
+                cursor.execute("UPDATE APPLY SET Status = 'Accepted' WHERE Name = %s;", (projectName,))
                 db.commit()
                 self.listbox4.delete(now)
-                self.listbox4.insert(now, "Approved")
+                self.listbox4.insert(now, "Accepted")
             else:
                 print("the status is already determined")
 
@@ -923,8 +1040,8 @@ class cs4400Project:
             self.majorVar = StringVar()
             self.majorVar.set(majorList[0])
             self.projectMajorOption = OptionMenu(self.addProjectFrame, self.majorVar, *majorList)
-            self.projectMajorOption.grid(row = 8, column = 1,pady=6) #column=self.numOfCategories
-
+            self.projectMajorOption.grid(row = 8, column = 1,pady=6)
+            
             self.yearVar = StringVar()
             self.yearVar.set("No Requirement")
             Label(self.addProjectFrame, text = "Year Requirement:",background="gray").grid(row = 9, column = 0)
@@ -987,27 +1104,11 @@ class cs4400Project:
                 print(designation)
                 print(majorRestriction)
                 print(departmentRestriction)
-                if(majorRestriction != "No Requirement" and departmentRestriction != "No Requirement"):
-                    print("both don't equal no requirement")
-                    print(self.majorDict[majorRestriction])
-                    if(departmentRestriction == self.majorDict[majorRestriction]):
-                        print("both major and department match")
-                        statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
-                        data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
-                        cursor.execute(statement, data)
-                        db.commit()
-                        print("inserted project")
-                    else:
-                        print("department needs to match major")
-                        return
-                else:
-                    print("one of them is no requirement")
-                    statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
-                    data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
-                    cursor.execute(statement, data)
-                    print("executed")
-                    db.commit()
-                    print("inserted project")
+                statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
+                data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
+                cursor.execute(statement, data)
+                db.commit()
+                print("inserted project")
             else:
                 print("no entry boxes can be empty")
                 return
