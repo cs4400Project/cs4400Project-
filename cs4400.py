@@ -348,9 +348,9 @@ class cs4400Project:
 
         print(self.currentUser)
 
-        Label(self.viewmyAppFrame, text = "Date",background="gray").grid(row = 0, column = 0)
-        Label(self.viewmyAppFrame, text = "Project Name",background="gray").grid(row = 0, column =1)
-        Label(self.viewmyAppFrame, text = "Status",background="gray").grid(row = 0, column = 2)
+        #Label(self.viewmyAppFrame, text = "Date",background="gray").grid(row = 0, column = 0)
+        #Label(self.viewmyAppFrame, text = "Project Name",background="gray").grid(row = 0, column =1)
+        #Label(self.viewmyAppFrame, text = "Status",background="gray").grid(row = 0, column = 2)
 
 
         newF = Frame(self.viewmyApp)
@@ -367,7 +367,7 @@ class cs4400Project:
             print("connected")
             cursor = db.cursor()
 
-            cursor.execute("SELECT Date,pName,Status FROM APPLY WHERE sName = %s",(self.currentUser,))
+            cursor.execute("SELECT Date,Name,Status FROM APPLY WHERE Username = %s",(self.currentUser,))
             data = cursor.fetchall()
             print(data)
             print(len(data))
@@ -379,7 +379,9 @@ class cs4400Project:
             listbox2 = Listbox(newF, yscrollcommand=scrollbar.set)
             listbox3 = Listbox(newF, yscrollcommand=scrollbar.set)
 
-
+            listbox1.insert(END,"DATE")
+            listbox2.insert(END,"PROJECT NAME")
+            listbox3.insert(END,"STATUS")        
 
             for t in data:
                 print(t)
@@ -614,6 +616,86 @@ class cs4400Project:
 
     def CFToViewPopPro(self):
         print("Popular Project")
+        self.chooseFunctionalityWin.withdraw()
+        self.viewpopReport = Toplevel() 
+        self.viewpopReport.title("Popular Applications")
+        self.viewpopReport.configure(background="gray")
+
+        self.poppicFrame = Frame(self.viewpopReport,background="gray")
+        self.poppicFrame.pack()
+
+        self.viewpopReportFrame = Frame(self.viewpopReport,background="gray")
+        self.viewpopReportFrame.pack()
+
+        ###slspic
+
+        urlsls = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        responsesls = urllib.request.urlopen(urlsls)
+        myPicturesls = responsesls.read()
+        import base64
+        b64_datasls = base64.encodebytes(myPicturesls)
+        self.photosls = PhotoImage(data=b64_datasls)
+        lsls = Label(self.poppicFrame, image = self.photosls)
+        lsls.grid(row= 0, column = 0, sticky= E)
+        #slspicc
+
+        scrollFrame= Frame(self.viewpopReport)
+        scrollFrame.pack()
+
+        backbFrame = Frame(self.viewpopReport,background="gray")
+        backbFrame.pack()
+
+        try:
+            print("here")
+            #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+
+            cursor.execute("SELECT PROJECT.Name, COUNT(*) AS Name FROM APPLY NATURAL JOIN PROJECT GROUP BY PROJECT.Name HAVING COUNT(*) <= 10 ORDER BY COUNT(*) DESC")
+            data = cursor.fetchall()
+
+            print(data)
+
+            scrollbar=Scrollbar(scrollFrame)
+            scrollbar.pack(side=RIGHT,fill=Y)
+            listbox1 = Listbox(scrollFrame, yscrollcommand=scrollbar.set)
+            listbox2 = Listbox(scrollFrame, yscrollcommand=scrollbar.set)
+
+            listbox1.insert(END,"PROJECT")
+            listbox2.insert(END,"# OF APPLICANTS")
+            
+            for t in data:
+                print(t)
+                listbox1.insert(END,str(t[0]))
+                listbox2.insert(END,str(t[1]))
+
+            listbox1.pack(side=LEFT,fill=BOTH)
+            listbox2.pack(side=RIGHT,fill=BOTH)
+               
+
+            listboxes = [listbox1,listbox2]
+
+            def onVSB(*args):
+                for lb in listboxes:
+                    lb.yview(*args)
+
+            scrollbar.config(command = onVSB)
+            cursor.close()
+            db.close()
+
+
+        except:
+            #cannot connect to database
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
+
+        backB = Button(backbFrame, text="Back",width =13,command=self.popBackbutton)
+        backB.grid(row = 0, column= 0, padx = 20, pady= 10)
+
+    def popBackbutton(self):
+        self.viewpopReport.withdraw()
+        self.chooseFunctionality()
 
     def CFToAppReport(self):
         print("Application Report")
@@ -657,7 +739,7 @@ class cs4400Project:
                                  passwd = "2KZtbzKa", db = "cs4400_Team_5")
             print("connected")
             cursor = db.cursor()
-            cursor.execute("SELECT pName, Major, Year, Status FROM APPLY JOIN USER WHERE sName=Username;")
+            cursor.execute("SELECT Name, Major, Year, Status FROM APPLY JOIN USER WHERE APPLY.Username=USER.Username;")
             tuples = cursor.fetchall()
             print(tuples)
             for i in tuples:
@@ -682,7 +764,7 @@ class cs4400Project:
             bottomFrame = Frame(self.viewApplicationsWin)
             bottomFrame.pack()
 
-            self.acceptButton = Button(bottomFrame,
+            #self.acceptButton = Button(bottomFrame,
 
             cursor.close()
             db.close()
