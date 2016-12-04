@@ -358,13 +358,27 @@ class cs4400Project:
             scrollbar = Scrollbar(tableFrame)
             scrollbar.pack(side = RIGHT, fill = Y)
 
-            #self.nameBox = Listbox(tableFrame, yscrollcommand=scrollbar.set)
-            #self.typeBox = 
+            self.nameBox = Listbox(tableFrame, yscrollcommand=scrollbar.set)
+            self.typeBox = Listbox(tableFrame, yscrollcommand=scrollbar.set)
 
-            
-        
-        #self.logoutButton = Button(self.welcomeFrame, text = "Log Out", command = self.logoutMe)
-        #self.logoutButton.grid(row = 2, column = 0, padx = 20, pady = 20)
+            self.nameBox.insert(0,"NAME")
+            self.typeBox.insert(0,"TYPE")
+            self.nameBox.pack(side = LEFT, fill = BOTH)
+            self.typeBox.pack(side = LEFT, fill = BOTH)
+
+            listboxes = [self.nameBox, self.typeBox]
+
+            def onVSB(*args):
+                for lb in listboxes:
+                    lb.yview(*args)
+
+            scrollbar.config(command=onVSB)
+
+            bottomFrame = Frame(self.welcomeWin)
+            bottomFrame.pack()
+
+            self.logoutButton = Button(bottomFrame, text = "Log Out", command = self.logoutMe)
+            self.logoutButton.grid(row = 0, column = 0, padx = 20, pady = 20)
 
             cursor.close()
             db.close()
@@ -927,7 +941,6 @@ class cs4400Project:
         projectName = self.listbox.get(now)
         status = self.listbox4.get(now)
         print(projectName,status)
-        #lol
         try:
         #connect to database
             db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
