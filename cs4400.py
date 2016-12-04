@@ -381,7 +381,7 @@ class cs4400Project:
 
             listbox1.insert(END,"DATE")
             listbox2.insert(END,"PROJECT NAME")
-            listbox3.insert(END,"STATUS")        
+            listbox3.insert(END,"STATUS")
 
             for t in data:
                 print(t)
@@ -617,7 +617,7 @@ class cs4400Project:
     def CFToViewPopPro(self):
         print("Popular Project")
         self.chooseFunctionalityWin.withdraw()
-        self.viewpopReport = Toplevel() 
+        self.viewpopReport = Toplevel()
         self.viewpopReport.title("Popular Applications")
         self.viewpopReport.configure(background="gray")
 
@@ -665,7 +665,7 @@ class cs4400Project:
 
             listbox1.insert(END,"PROJECT")
             listbox2.insert(END,"# OF APPLICANTS")
-            
+
             for t in data:
                 print(t)
                 listbox1.insert(END,str(t[0]))
@@ -673,7 +673,7 @@ class cs4400Project:
 
             listbox1.pack(side=LEFT,fill=BOTH)
             listbox2.pack(side=RIGHT,fill=BOTH)
-               
+
 
             listboxes = [listbox1,listbox2]
 
@@ -728,10 +728,10 @@ class cs4400Project:
         scrollbar = Scrollbar(newFrame)
         scrollbar.pack(side = RIGHT, fill = Y)
 
-        listbox = Listbox(newFrame, yscrollcommand=scrollbar.set)
+        self.listbox = Listbox(newFrame, yscrollcommand=scrollbar.set)
         listbox2 = Listbox(newFrame, yscrollcommand=scrollbar.set)
         listbox3 = Listbox(newFrame, yscrollcommand=scrollbar.set)
-        listbox4 = Listbox(newFrame, yscrollcommand=scrollbar.set)
+        self.listbox4 = Listbox(newFrame, yscrollcommand=scrollbar.set)
 
         try:
         #connect to database
@@ -744,16 +744,20 @@ class cs4400Project:
             print(tuples)
             for i in tuples:
                 print(i)
-                listbox.insert(END, str(i[0]))
+                self.listbox.insert(END, str(i[0]))
                 listbox2.insert(END, str(i[1]))
                 listbox3.insert(END, str(i[2]))
-                listbox4.insert(END, str(i[3]))
-            listbox.pack(side=LEFT, fill=BOTH)
+                self.listbox4.insert(END, str(i[3]))
+            self.listbox.insert(0, "PROJECT")
+            listbox2.insert(0, 'APPLICANT MAJOR')
+            listbox3.insert(0, 'APPLICANT YEAR')
+            self.listbox4.insert(0, 'STATUS')
+            self.listbox.pack(side=LEFT, fill=BOTH)
             listbox2.pack(side=LEFT, fill=BOTH)
             listbox3.pack(side=LEFT, fill=BOTH)
-            listbox4.pack(side=LEFT, fill=BOTH)
+            self.listbox4.pack(side=LEFT, fill=BOTH)
 
-            listboxes = [listbox,listbox2,listbox3,listbox4]
+            listboxes = [self.listbox,listbox2,listbox3,self.listbox4]
 
             def onVSB(*args):
                 for lb in listboxes:
@@ -763,14 +767,71 @@ class cs4400Project:
 
             bottomFrame = Frame(self.viewApplicationsWin)
             bottomFrame.pack()
-
-            #self.acceptButton = Button(bottomFrame,
+            print("made frame")
+            self.acceptButton = Button(bottomFrame, text = "Accept", command = self.acceptApp)
+            self.acceptButton.grid(row = 0, column = 0)
+            self.rejectButton = Button(bottomFrame, text = "Reject", command = self.rejectApp)
+            self.rejectButton.grid(row = 0, column = 1)
+            self.viewAppToFunctionalityButton = Button(bottomFrame, text = "Back", command = self.viewAppToFunctionality)
+            self.viewAppToFunctionalityButton.grid(row = 0, column = 2)
 
             cursor.close()
             db.close()
         except:
             print("can not connect to database")
 
+    def acceptApp(self):
+        now = self.listbox.curselection()
+        projectName = self.listbox.get(now)
+        status = self.listbox4.get(now)
+        print(projectName,status)
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+            if(status == "Pending"):
+                cursor.execute("UPDATE APPLY SET Status = 'Approved' WHERE Name = %s;", (projectName,))
+                db.commit()
+                self.listbox4.delete(now)
+                self.listbox4.insert(now, "Approved")
+            else:
+                print("the status is already determined")
+
+            cursor.close()
+            db.close()
+
+        except:
+            print("can not connect to database")
+
+    def rejectApp(self):
+        now = self.listbox.curselection()
+        projectName = self.listbox.get(now)
+        status = self.listbox4.get(now)
+        print(projectName,status)
+        try:
+        #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+            if(status == "Pending"):
+                cursor.execute("UPDATE APPLY SET Status = 'Rejected' WHERE Name = %s;", (projectName,))
+                db.commit()
+                self.listbox4.delete(now)
+                self.listbox4.insert(now, "Rejected")
+            else:
+                print("the status is already determined")
+
+            cursor.close()
+            db.close()
+        except:
+            print("can not connect to database")
+
+    def viewAppToFunctionality(self):
+        self.viewApplicationsWin.withdraw()
+        self.chooseFunctionality()
 
     def addProject(self):
 
