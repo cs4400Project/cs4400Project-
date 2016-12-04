@@ -3,6 +3,7 @@ import pymysql
 from re import findall
 import urllib.request
 import re
+import base64
 
 
 
@@ -277,6 +278,16 @@ class cs4400Project:
         #Me Button
         self.meButton = Button(self.welcomeFrame, text = "My Profile", command = self.meWindow)
         self.meButton.grid(row = 0, column = 0, padx = 20, pady = 20)
+
+        # #TEST STUFF
+        # self.projectButton = Button(self.welcomeFrame, text = "Project", command = lambda:self.viewProject("Excel Peer Support Network"))
+        # self.projectButton.grid(row = 0, column = 2, padx = 20, pady = 20)
+
+        # self.courseButton = Button(self.welcomeFrame, text = "Course", command = lambda:self.viewCourse("Habitable Planet"))
+        # self.courseButton.grid(row = 0, column = 3, padx = 20, pady = 20)
+        # #TEST STUFF
+
+
         Label(self.welcomeFrame, text = "Main Page").grid(row = 0, column = 1)
         Label(self.welcomeFrame, text = "Title").grid(row = 1, column = 0)
         self.welcomeTitleEntry = Entry(self.welcomeFrame)
@@ -395,12 +406,186 @@ class cs4400Project:
             
         self.radio1.select()
         
-        
-        
     def logoutMe(self):
         self.welcomeWin.withdraw()
         self.rootwin.iconify()
         print("logged out")
+
+    def viewProject(self, name):
+        self.welcomeWin.withdraw()
+        self.viewProjectWin = Toplevel()
+        self.viewProjectWin.title(name)
+        self.viewProjectWin.configure(background='gray')
+
+        ###slspic
+        self.picFrame =Frame(self.viewProjectWin,background="gray")
+        self.picFrame.pack()
+
+        urlsls = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        responsesls = urllib.request.urlopen(urlsls)
+        myPicturesls = responsesls.read()
+        b64_datasls = base64.encodebytes(myPicturesls)
+        self.photosls = PhotoImage(data=b64_datasls)
+        lsls = Label(self.picFrame, image = self.photosls)
+        lsls.grid(row= 0, column = 0, sticky= E)
+        #slspicc
+
+        self.viewProjectFrame = Frame(self.viewProjectWin, background="gray", width=550)
+        self.viewProjectFrame.pack(side = LEFT )
+
+        try:
+
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM PROJECT WHERE PROJECT.Name = '" + name + "';")
+            aList = cursor.fetchall()
+
+            cursor.execute("SELECT B.Category_name FROM PROJECT A JOIN PROJECT_IS_CATEGORY B ON A.Name = B.Name WHERE A.Name = '" + name + "';")
+            categoryTuple = cursor.fetchall()
+            categoryList = "";
+            for cat in categoryTuple:
+                categoryList += cat[0] + ", "
+
+            cursor.execute("SELECT B.Requirement FROM PROJECT A JOIN PROJECT_REQUIREMENT B ON A.Name = B.Name WHERE A.Name = '" + name + "';")
+            reqTuple = cursor.fetchall()
+            reqList = "";
+            for req in reqTuple:
+                reqList += req[0] + "; "
+
+            Label(self.viewProjectFrame, text = aList[0][0], background="gray", wraplength = 500, justify = LEFT).grid(row = 0, column= 0, padx = 25, pady = 5, sticky= W)
+            Label(self.viewProjectFrame, text = aList[0][2] + " (" + aList[0][3] + ")", background="gray", wraplength = 500, justify = LEFT).grid(row = 1, column= 0, padx = 25, pady = 5, sticky= W)
+            Label(self.viewProjectFrame, text = aList[0][4], background="gray", wraplength = 500, justify = LEFT).grid(row = 2, column= 0, sticky= W, padx = 25, pady = 5)
+            Label(self.viewProjectFrame, text = "Designation: " + aList[0][5], background="gray", wraplength = 500, justify = LEFT).grid(row = 3, column= 0, sticky= W, padx = 25, pady = 5)
+            Label(self.viewProjectFrame, text = "Estimated Number of Students: " + str(aList[0][1]), background="gray", wraplength = 500, justify = LEFT).grid(row = 6, column= 0, sticky= W, padx = 25, pady = 5) 
+            Label(self.viewProjectFrame, text = "Category: " + categoryList, background="gray", wraplength = 500, justify = LEFT).grid(row = 4, column= 0, sticky= W, padx = 25, pady = 5)
+            Label(self.viewProjectFrame, text = "Requirement: " + reqList, background="gray", wraplength = 500, justify = LEFT).grid(row = 5, column= 0, sticky= W, padx = 25, pady = 5)
+
+            self.backButton = Button(self.viewProjectFrame, text = "Back", command = self.backViewProject)
+            self.backButton.grid(row = 7, column = 0, padx = 5, pady = 20)
+
+            self.applyButton = Button(self.viewProjectFrame, text = "Apply", command = lambda:self.viewApply(name))
+            self.applyButton.grid(row = 8, column = 0, padx = 5, pady = 20)
+
+            cursor.close()
+            db.close()
+
+        except:
+            print ("Unexpected error:", sys.exc_info()[0])
+
+    def backViewProject(self):
+        self.viewProjectWin.withdraw()
+        self.welcomeScreen()
+
+    def viewApply(self, name):
+        try:
+
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+
+            cursor = db.cursor()
+
+            cursor.execute("SELECT B.Requirement FROM PROJECT_REQUIREMENT B JOIN PROJECT A ON A.Name = B.Name WHERE A.Name = '" + name + "';")
+            reqTupleTest = cursor.fetchall()
+            reqListTest = [];
+            for req in reqTupleTest:
+                reqListTest.append(req[0].replace("students only","").replace("s only","").replace("only", "").rstrip(" "))
+            print (reqListTest)
+
+            cursor.execute("SELECT A.Year, A.Major, B.Dept_name FROM USER A JOIN MAJOR B WHERE A.Major = B.Name AND A.Username = '" + self.currentUser + "';")
+            userTuple = cursor.fetchall()
+            print (userTuple)
+            if(len(userTuple) != 0):
+                userListTest = userTuple[0]
+                print (userListTest)
+
+                reqCount = 0
+
+                for x in reqListTest:
+                    if x in userListTest:
+                        reqCount += 1
+
+                print (len(reqListTest))
+                print (reqCount)
+
+
+                # cursor.execute("SELECT B.Requirement FROM PROJECT A JOIN PROJECT_REQUIREMENT B ON A.Name = B.Name WHERE A.Name = '" + name + "';")
+                if (len(reqListTest) == reqCount):
+                    date = datetime.datetime.now().strftime("%m/%d/%Y")
+                    cursor.execute("INSERT INTO APPLY VALUES(%s, %s, %s, %s)", (self.currentUser, name, date, "Pending"))
+                else:
+                    print("Does not meet Requirements")
+            else:
+                print("Student has NULL field")
+
+            cursor.close()
+            db.close()
+
+        except:
+            print ("Unexpected error:", sys.exc_info()[0])
+
+    def viewCourse(self, name):
+        self.welcomeWin.withdraw()
+        self.viewCourseWin = Toplevel()
+        self.viewCourseWin.configure(background='gray')
+
+        ###slspic
+        self.picFrame =Frame(self.viewCourseWin, background="gray")
+        self.picFrame.pack()
+
+        urlsls = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        responsesls = urllib.request.urlopen(urlsls)
+        myPicturesls = responsesls.read()
+        b64_datasls = base64.encodebytes(myPicturesls)
+        self.photosls = PhotoImage(data=b64_datasls)
+        lsls = Label(self.picFrame, image = self.photosls)
+        lsls.grid(row= 0, column = 0, sticky= E)
+        #slspicc
+
+        self.viewCourseFrame = Frame(self.viewCourseWin, background="gray", width=550)
+        self.viewCourseFrame.pack(side = LEFT )
+
+        try:
+
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM COURSE WHERE COURSE.Name = '" + name + "';")
+            aList = cursor.fetchall()
+
+            cursor.execute("SELECT B.Category_name FROM COURSE A JOIN COURSE_IS_CATEGORY B ON A.Name = B.Name WHERE A.Name = '" + name + "';")
+            categoryTuple = cursor.fetchall()
+            categoryList = "";
+            for cat in categoryTuple:
+                categoryList += cat[0] + ", "
+
+
+            Label(self.viewCourseFrame, text = aList[0][1], background="gray", wraplength = 500, justify = LEFT).grid(row = 0, column= 0, padx = 25, pady = 5, sticky= W)
+            Label(self.viewCourseFrame, text = "Course Name: " + aList[0][0], background ="gray", wraplength = 500, justify = LEFT).grid(row = 1, column= 0, padx = 25, pady = 5, sticky= W)
+            Label(self.viewCourseFrame, text = "Instructor: " + aList[0][2], background ="gray", wraplength = 500, justify = LEFT).grid(row = 2, column= 0, sticky= W, padx = 25, pady = 5)
+            Label(self.viewCourseFrame, text = "Designation: " + aList[0][4], background ="gray", wraplength = 500, justify = LEFT).grid(row = 3, column= 0, sticky= W, padx = 25, pady = 5)
+            Label(self.viewCourseFrame, text = "Estimated Number of Students: " + str(aList[0][3]), background="gray", wraplength = 500, justify = LEFT).grid(row = 6, column= 0, sticky= W, padx = 25, pady = 5)
+
+            Label(self.viewCourseFrame, text = "Category: " + categoryList, background="gray", wraplength = 500, justify = LEFT).grid(row = 4, column= 0, sticky= W, padx = 25, pady = 5)
+            
+            self.backButton = Button(self.viewCourseFrame, text = "Back", command = self.backViewCourse)
+            self.backButton.grid(row = 7, column = 0, padx = 5, pady = 20)
+            
+            cursor.close()
+            db.close()
+
+        except:
+            print ("Unexpected error:", sys.exc_info()[0])
+
+    def backViewCourse(self):
+        self.viewCourseWin.withdraw()
+        self.welcomeScreen()
+
 
     def meWindow(self):
 
