@@ -927,6 +927,7 @@ class cs4400Project:
         projectName = self.listbox.get(now)
         status = self.listbox4.get(now)
         print(projectName,status)
+        #lol
         try:
         #connect to database
             db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
