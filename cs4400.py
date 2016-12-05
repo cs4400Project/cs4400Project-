@@ -5,6 +5,7 @@ import urllib.request
 import re
 import base64
 import datetime
+import string
 
 
 
@@ -88,6 +89,7 @@ class cs4400Project:
             cursor.close()
             db.close()
         except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
             print("cannot connect to database")
 
 
@@ -258,6 +260,7 @@ class cs4400Project:
         self.welcomeWin = Toplevel()
         self.welcomeWin.title("Welcome")
 
+
         ###slspic
 
         self.picFrame =Frame(self.welcomeWin,background="gray")
@@ -279,15 +282,6 @@ class cs4400Project:
         #Me Button
         self.meButton = Button(self.welcomeFrame, text = "My Profile", command = self.meWindow)
         self.meButton.grid(row = 0, column = 0, padx = 20, pady = 20)
-
-        # #TEST STUFF
-        # self.projectButton = Button(self.welcomeFrame, text = "Project", command = lambda:self.viewProject("Excel Peer Support Network"))
-        # self.projectButton.grid(row = 0, column = 2, padx = 20, pady = 20)
-
-        # self.courseButton = Button(self.welcomeFrame, text = "Course", command = lambda:self.viewCourse("Habitable Planet"))
-        # self.courseButton.grid(row = 0, column = 3, padx = 20, pady = 20)
-        # #TEST STUFF
-
 
         Label(self.welcomeFrame, text = "Main Page").grid(row = 0, column = 1)
         Label(self.welcomeFrame, text = "Title").grid(row = 1, column = 0)
@@ -319,35 +313,35 @@ class cs4400Project:
 
             addCategoryButton = Button(self.welcomeFrame, text = "Add a Category", command = self.mainPageAddCategory)
             addCategoryButton.grid(row = 3, column = 0)
-            
+
             Label(self.welcomeFrame, text = "Designation").grid(row = 4, column = 0)
             cursor.execute("SELECT * FROM DESIGNATION;")
             aList = cursor.fetchall()
             designationList = []
             for designation in aList:
                 designationList.append(designation[0])
-            designationList.insert(0,"Please Select")
+            designationList.insert(0,"")
             self.welcomeDesignationVar = StringVar()
             self.welcomeDesignationVar.set(designationList[0])
             designationOption = OptionMenu(self.welcomeFrame, self.welcomeDesignationVar, *designationList)
             designationOption.grid(row = 4, column = 1,pady=6)
-            
+
             Label(self.welcomeFrame, text = "Major").grid(row = 4, column = 2)
             cursor.execute("SELECT * FROM MAJOR")
             majorTuple = cursor.fetchall()
             majorList = []
             for major in majorTuple:
                 majorList.append(major[0])
-            majorList.insert(0, "Please Select")
+            majorList.insert(0, "")
             self.welcomeMajorVar = StringVar()
             self.welcomeMajorVar.set(majorList[0])
             majorOption = OptionMenu(self.welcomeFrame, self.welcomeMajorVar, *majorList)
             majorOption.grid(row = 4, column = 3,pady=6)
-            
+
             Label(self.welcomeFrame, text = "Year").grid(row = 4, column = 4)
             self.welcomeYearVar = StringVar()
-            self.welcomeYearVar.set("Please Select")
-            yearOption = OptionMenu(self.welcomeFrame, self.welcomeYearVar, "Please Select", "Freshman","Sophomore", "Junior","Senior")
+            self.welcomeYearVar.set("")
+            yearOption = OptionMenu(self.welcomeFrame, self.welcomeYearVar, "", "Freshman","Sophomore", "Junior","Senior")
             yearOption.grid(row = 4, column = 5,pady=6)
 
             self.filterRadio = StringVar()
@@ -402,6 +396,7 @@ class cs4400Project:
             db.close()
 
         except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
             print("cannot connect to database")
 
     def mainPageAddCategory(self):
@@ -424,7 +419,7 @@ class cs4400Project:
         self.categories = []
         self.categories.append(self.categorySelection)
         self.numOfCategories = 1
-            
+
         self.radio1.select()
 
     def viewElement(self):
@@ -491,7 +486,7 @@ class cs4400Project:
             Label(self.viewProjectFrame, text = aList[0][2] + " (" + aList[0][3] + ")", background="gray", wraplength = 500, justify = LEFT).grid(row = 1, column= 0, padx = 25, pady = 5, sticky= W)
             Label(self.viewProjectFrame, text = aList[0][4], background="gray", wraplength = 500, justify = LEFT).grid(row = 2, column= 0, sticky= W, padx = 25, pady = 5)
             Label(self.viewProjectFrame, text = "Designation: " + aList[0][5], background="gray", wraplength = 500, justify = LEFT).grid(row = 3, column= 0, sticky= W, padx = 25, pady = 5)
-            Label(self.viewProjectFrame, text = "Estimated Number of Students: " + str(aList[0][1]), background="gray", wraplength = 500, justify = LEFT).grid(row = 6, column= 0, sticky= W, padx = 25, pady = 5) 
+            Label(self.viewProjectFrame, text = "Estimated Number of Students: " + str(aList[0][1]), background="gray", wraplength = 500, justify = LEFT).grid(row = 6, column= 0, sticky= W, padx = 25, pady = 5)
             Label(self.viewProjectFrame, text = "Category: " + categoryList, background="gray", wraplength = 500, justify = LEFT).grid(row = 4, column= 0, sticky= W, padx = 25, pady = 5)
             Label(self.viewProjectFrame, text = "Requirement: " + reqList, background="gray", wraplength = 500, justify = LEFT).grid(row = 5, column= 0, sticky= W, padx = 25, pady = 5)
 
@@ -594,7 +589,9 @@ class cs4400Project:
             if (checkforReq[0][0] > 0):
                 date = datetime.datetime.now().strftime("%m/%d/%Y")
                 cursor.execute("INSERT INTO APPLY VALUES(%s, %s, %s, %s)", (self.currentUser, name, date, "Pending"))
+                messagebox.showinfo(title = "Success", message = "You have applied for this project!")
             else:
+                messagebox.showerror(title = "Error",message = "Sorry, you do not meet the requirements for this project.")
                 print("Doesn't meet requirements")
 
 
@@ -649,10 +646,10 @@ class cs4400Project:
             Label(self.viewCourseFrame, text = "Estimated Number of Students: " + str(aList[0][3]), background="gray", wraplength = 500, justify = LEFT).grid(row = 6, column= 0, sticky= W, padx = 25, pady = 5)
 
             Label(self.viewCourseFrame, text = "Category: " + categoryList, background="gray", wraplength = 500, justify = LEFT).grid(row = 4, column= 0, sticky= W, padx = 25, pady = 5)
-            
+
             self.backButton = Button(self.viewCourseFrame, text = "Back", command = self.backViewCourse)
             self.backButton.grid(row = 7, column = 0, padx = 5, pady = 20)
-            
+
             cursor.close()
             db.close()
 
@@ -973,7 +970,7 @@ class cs4400Project:
         self.chooseFunctionalityFrame = Frame(self.chooseFunctionalityWin,background="grey")
         self.chooseFunctionalityFrame.pack()
 
-        self.viewAppButton = Button(self.chooseFunctionalityFrame, text = "View Application", command = self.CFToViewApp)
+        self.viewAppButton = Button(self.chooseFunctionalityFrame, text = "View Applications", command = self.CFToViewApp)
         self.viewAppButton.grid(row = 0, column = 0, pady=5, sticky =N+S+E+W)
         self.viewPopProReportButton = Button(self.chooseFunctionalityFrame, text = "View Popular Project Report", command = self.CFToViewPopPro)
         self.viewPopProReportButton.grid(row = 2, column = 0, pady=5, sticky =N+S+E+W)
@@ -1032,10 +1029,9 @@ class cs4400Project:
             print("connected")
             cursor = db.cursor()
 
-            cursor.execute("SELECT PROJECT.Name, COUNT(*) AS Name FROM APPLY NATURAL JOIN PROJECT GROUP BY PROJECT.Name HAVING COUNT(*) <= 10 ORDER BY COUNT(*) DESC")
+            cursor.execute("SELECT PROJECT.Name, COUNT(*) AS Name FROM APPLY NATURAL JOIN PROJECT GROUP BY PROJECT.Name ORDER BY COUNT(*) DESC LIMIT 10")
             data = cursor.fetchall()
 
-            print(data)
 
             scrollbar=Scrollbar(scrollFrame)
             scrollbar.pack(side=RIGHT,fill=Y)
@@ -1046,7 +1042,6 @@ class cs4400Project:
             listbox2.insert(END,"# OF APPLICANTS")
 
             for t in data:
-                print(t)
                 listbox1.insert(END,str(t[0]))
                 listbox2.insert(END,str(t[1]))
 
@@ -1077,6 +1072,8 @@ class cs4400Project:
         self.chooseFunctionality()
 
     def CFToAppReport(self):
+        self.chooseFunctionalityWin.withdraw()
+        self.viewAppReport()
         print("Application Report")
 
     def CFToAddPro(self):
@@ -1093,13 +1090,121 @@ class cs4400Project:
         self.rootwin.iconify()
         print("logged out")
 
+    def viewAppReport(self):
+        self.viewAppReportWin = Toplevel()
+        self.viewAppReportWin.title("Applications Report")
+        self.viewAppReportWin.configure(background="gray")
+
+        self.repopicFrame=Frame(self.viewAppReportWin,background="gray")
+        self.repopicFrame.pack()
+
+
+        #picc SLS
+        avappurl = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        avappresponse = urllib.request.urlopen(avappurl)
+        avappmyPicture = avappresponse.read()
+        import base64
+        avappb64_data = base64.encodebytes(avappmyPicture)
+        self.avappphoto = PhotoImage(data=avappb64_data)
+        avappl = Label(self.repopicFrame, image = self.avappphoto)
+        avappl.grid(row= 0, column = 0, sticky= W+E)
+        #picc SLS
+
+
+        statsFrame = Frame(self.viewAppReportWin)
+        statsFrame.pack()
+
+        repbotFrame = Frame(self.viewAppReportWin,background = "gray")
+        repbotFrame.pack()
+
+        try:
+            #connect to database
+            db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
+                passwd = "2KZtbzKa", db = "cs4400_Team_5")
+            print("connected")
+            cursor = db.cursor()
+
+            cursor.execute("SELECT COUNT(*) FROM APPLY")
+            totalapps = cursor.fetchall()
+
+            cursor.execute("SELECT COUNT(*) FROM APPLY WHERE Status='Accepted'")
+            totalaccept = cursor.fetchall()
+
+            appstats = Label(self.repopicFrame,text= str(totalapps[0][0]) +" applications in total, " + str(totalaccept[0][0]) + " accepted applications", background="gray").grid(row=1, column=0,sticky=E,pady=10)
+
+            cursor.execute("""SELECT Y.Name, Applied, AcceptedPercent, Top  FROM ( SELECT SUBSTRING_INDEX( GROUP_CONCAT(Major SEPARATOR ','), ',', 3) as Top, Name FROM (SELECT COUNT(*), USER.Major as Major, APPLY.Name as Name  FROM APPLY LEFT JOIN USER ON USER.Username = APPLY.Username GROUP BY APPLY.Name, USER.Major) AS T  GROUP BY Name) as Y LEFT JOIN (SELECT PROJECT.Name as Name, Count(*) as Applied, Sum(Case When APPLY.Status="Accepted" Then 1 Else 0 End) / Count(*) * 100 as AcceptedPercent FROM PROJECT LEFT JOIN APPLY ON APPLY.Name=PROJECT.Name GROUP BY PROJECT.Name) AS Z  ON Y.Name = Z.Name""")
+            data = cursor.fetchall()
+
+
+            statsscrollbar=Scrollbar(statsFrame)
+            statsscrollbar.pack(side=RIGHT,fill=Y)
+            statslistbox1 = Listbox(statsFrame, yscrollcommand=statsscrollbar.set)
+            statslistbox2 = Listbox(statsFrame, yscrollcommand=statsscrollbar.set)
+            statslistbox3 = Listbox(statsFrame, yscrollcommand=statsscrollbar.set)
+            statslistbox4 = Listbox(statsFrame, yscrollcommand=statsscrollbar.set)
+
+            statslistbox1.insert(END,"PROJECT")
+            statslistbox2.insert(END,"# OF APPLICANTS")
+            statslistbox3.insert(END,"ACCEPTANCE RATE")
+            statslistbox4.insert(END,"TOP 3 MAJORS")
+
+            for t in data:
+                statslistbox1.insert(END,str(t[0]))
+                statslistbox2.insert(END,str(t[1]))
+                statslistbox3.insert(END,'{0:.2f}%'.format(float(t[2])))
+                statslistbox4.insert(END,str(t[3]))
+
+
+            statslistbox1.pack(side=LEFT,fill=BOTH)
+            statslistbox2.pack(side=LEFT,fill=BOTH)
+            statslistbox3.pack(side=LEFT,fill=BOTH)
+            statslistbox4.pack(side=LEFT,fill=BOTH)
+
+
+            statslistboxes = [statslistbox1,statslistbox2,statslistbox3,statslistbox4]
+
+            def onVSB(*args):
+                for slb in statslistboxes:
+                    slb.yview(*args)
+
+            statsscrollbar.config(command = onVSB)
+
+
+            statsback = Button(repbotFrame,text="Back",width =13,command=self.goBacktoFunc).grid(row=0,column=0)
+
+            cursor.close()
+            db.close()
+        except:
+            #cannot connect to database
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
+
+    def goBacktoFunc(self):
+        self.viewAppReportWin.withdraw()
+        self.chooseFunctionality()
+
+
     def viewApplications(self):
 
         self.viewApplicationsWin = Toplevel()
         self.viewApplicationsWin.title("View Applications")
+        self.viewApplicationsWin.configure(background="gray")
 
-        self.viewApplicationsFrame = Frame(self.viewApplicationsWin)
+
+        self.viewApplicationsFrame = Frame(self.viewApplicationsWin,background="gray")
         self.viewApplicationsFrame.pack()
+
+        #picc SLS
+        vappurl = "http://imageshack.com/a/img923/492/NJ18VG.gif"
+        vappresponse = urllib.request.urlopen(vappurl)
+        vappmyPicture = vappresponse.read()
+        import base64
+        vappb64_data = base64.encodebytes(vappmyPicture)
+        self.vappphoto = PhotoImage(data=vappb64_data)
+        vappl = Label(self.viewApplicationsFrame, image = self.vappphoto)
+        vappl.grid(row= 0, column = 0, sticky= W+E)
+        #picc SLS
+
+        instruct = Label(self.viewApplicationsFrame,text = "Must click the Project Name to Accept or Reject").grid(row = 1, column =0,pady= 10)
 
         newFrame = Frame(self.viewApplicationsWin)
         newFrame.pack()
@@ -1120,9 +1225,7 @@ class cs4400Project:
             cursor = db.cursor()
             cursor.execute("SELECT Name, Major, Year, Status FROM APPLY JOIN USER WHERE APPLY.Username=USER.Username;")
             tuples = cursor.fetchall()
-            print(tuples)
             for i in tuples:
-                print(i)
                 self.listbox.insert(END, str(i[0]))
                 listbox2.insert(END, str(i[1]))
                 listbox3.insert(END, str(i[2]))
@@ -1147,17 +1250,18 @@ class cs4400Project:
             bottomFrame = Frame(self.viewApplicationsWin)
             bottomFrame.pack()
             print("made frame")
-            self.acceptButton = Button(bottomFrame, text = "Accept", command = self.acceptApp)
-            self.acceptButton.grid(row = 0, column = 0)
-            self.rejectButton = Button(bottomFrame, text = "Reject", command = self.rejectApp)
-            self.rejectButton.grid(row = 0, column = 1)
-            self.viewAppToFunctionalityButton = Button(bottomFrame, text = "Back", command = self.viewAppToFunctionality)
-            self.viewAppToFunctionalityButton.grid(row = 0, column = 2)
+            self.acceptButton = Button(bottomFrame, text = "Accept", command = self.acceptApp,width=13)
+            self.acceptButton.grid(row = 0, column = 1)
+            self.rejectButton = Button(bottomFrame, text = "Reject", command = self.rejectApp,width=13)
+            self.rejectButton.grid(row = 0, column = 2)
+            self.viewAppToFunctionalityButton = Button(bottomFrame, text = "Back", command = self.viewAppToFunctionality,width=13)
+            self.viewAppToFunctionalityButton.grid(row = 0, column = 0)
 
             cursor.close()
             db.close()
         except:
-            print("can not connect to database")
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
+
 
     def acceptApp(self):
         now = self.listbox.curselection()
@@ -1171,18 +1275,19 @@ class cs4400Project:
             print("connected")
             cursor = db.cursor()
             if(status == "Pending"):
-                cursor.execute("UPDATE APPLY SET Status = 'Accepted' WHERE Name = %s;", (projectName,))
+                cursor.execute("UPDATE APPLY SET Status = 'Approved' WHERE Name = %s;", (projectName,))
                 db.commit()
                 self.listbox4.delete(now)
                 self.listbox4.insert(now, "Accepted")
             else:
-                print("the status is already determined")
+                messagebox.showerror(title = "Error",message = "The status has already been determined.")
 
             cursor.close()
             db.close()
 
         except:
-            print("can not connect to database")
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
+
 
     def rejectApp(self):
         now = self.listbox.curselection()
@@ -1202,12 +1307,14 @@ class cs4400Project:
                 self.listbox4.delete(now)
                 self.listbox4.insert(now, "Rejected")
             else:
-                print("the status is already determined")
+                messagebox.showerror(title = "Error",message = "The status has already been determined.")
+
 
             cursor.close()
             db.close()
         except:
-            print("can not connect to database")
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
+
 
     def viewAppToFunctionality(self):
         self.viewApplicationsWin.withdraw()
@@ -1304,7 +1411,7 @@ class cs4400Project:
             self.majorVar.set(majorList[0])
             self.projectMajorOption = OptionMenu(self.addProjectFrame, self.majorVar, *majorList)
             self.projectMajorOption.grid(row = 8, column = 1,pady=6)
-            
+
             self.yearVar = StringVar()
             self.yearVar.set("No Requirement")
             Label(self.addProjectFrame, text = "Year Requirement:",background="gray").grid(row = 9, column = 0)
@@ -1352,6 +1459,8 @@ class cs4400Project:
         for i in self.categories:
             categories.append(i.get())
         categories = set(categories)
+        for c in categories:
+            print(c)
         estNumOfStudents = self.estNumStudentsEntry.get().strip()
         majorRestriction = self.majorVar.get()
         yearRestriction = self.yearVar.get()
@@ -1362,41 +1471,55 @@ class cs4400Project:
                                  passwd = "2KZtbzKa", db = "cs4400_Team_5")
             print("+")
             cursor = db.cursor()
+            cursor.execute("SELECT Name FROM PROJECT WHERE Name = %s;",(projectName,))
+            aList = cursor.fetchall()
+            print(aList)
             if(projectName != "" and advisorName != "" and advisorEmail != "" and description != "" and estNumOfStudents != ""):
-                print("none of the entry boxes are empty")
-                print(designation)
-                print(majorRestriction)
-                print(departmentRestriction)
-                statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
-                data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
-                cursor.execute(statement, data)
-                db.commit()
-                print("inserted project")
+                if(len(aList) == 0):
+                    print("none of the entry boxes are empty")
+                    print(designation)
+                    print(majorRestriction)
+                    print(departmentRestriction)
+                    statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
+                    data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
+                    cursor.execute(statement, data)
+                    db.commit()
+                    print("inserted project")
+                else:
+                    print("Project name already taken")
+                    return
             else:
+                messagebox.showerror(title = "Error",message = "No fields can be empty!")
                 print("no entry boxes can be empty")
                 return
             for category in categories:
-                cursor.execute("INSERT INTO PROJECT_IS_CATEGORY (Project_name, Category_name) VALUES (%s, %s);", (projectName, category))
+                cursor.execute("INSERT INTO PROJECT_IS_CATEGORY (Name, Category_name) VALUES (%s, %s);", (projectName, category))
                 db.commit()
                 print("inserted category")
             if(majorRestriction != "No Requirement"):
                 print("major restriction does not equal")
-                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, majorRestriction))
+                restriction = majorRestriction + " students only"
+                print(restriction)
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, restriction))
                 db.commit()
                 print("inserted major requirement")
             if(yearRestriction != "No Requirement"):
-                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, yearRestriction))
+                restriction = yearRestriction + " only"
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, restriction))
                 db.commit()
                 print("inserted year requirement")
             if(departmentRestriction != "No Requirement"):
-                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, departmentRestriction))
+                restriction = departmentRestriction + " students only"
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, restriction))
                 db.commit()
                 print("inserted department restriction")
+                messagebox.showinfo(title = "Success",message = "You have submitted a project.")
 
             cursor.close()
             db.close()
 
         except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
             print("cannot connect to database")
 
 
@@ -1516,19 +1639,22 @@ class cs4400Project:
             if(courseNumber != "" and courseName != "" and instructor != "" and estNumofStudents != ""):
                 cursor.execute("INSERT INTO COURSE (Name, CourseNum, Instructor, EstNumofStud, Designation) VALUES (%s,%s,%s,%s,%s);",(courseName, courseNumber, instructor, estNumofStudents, designation))
                 db.commit()
+                messagebox.showinfo(title = "Success",message = "Course has been added.")
                 print("inserted course")
             else:
+                messagebox.showerror(title = "Error",message = "No fields can be empty!")
                 print("entries can not be empty")
                 return
 
             for category in categories:
-                cursor.execute("INSERT INTO COURSE_IS_CATEGORY (Course_name, Category_name) VALUES (%s, %s);",(courseName, category))
+                cursor.execute("INSERT INTO COURSE_IS_CATEGORY (Name, Category_name) VALUES (%s, %s);",(courseName, category))
                 db.commit()
 
             cursor.close()
             db.close()
 
         except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
             print("can not connect to database")
 
 
