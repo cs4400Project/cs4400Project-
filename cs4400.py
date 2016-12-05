@@ -259,7 +259,7 @@ class cs4400Project:
         #GUI for the welcome screen
         self.welcomeWin = Toplevel()
         self.welcomeWin.title("Welcome")
-        
+
 
         ###slspic
 
@@ -282,15 +282,6 @@ class cs4400Project:
         #Me Button
         self.meButton = Button(self.welcomeFrame, text = "My Profile", command = self.meWindow)
         self.meButton.grid(row = 0, column = 0, padx = 20, pady = 20)
-
-        # #TEST STUFF
-        # self.projectButton = Button(self.welcomeFrame, text = "Project", command = lambda:self.viewProject("Excel Peer Support Network"))
-        # self.projectButton.grid(row = 0, column = 2, padx = 20, pady = 20)
-
-        # self.courseButton = Button(self.welcomeFrame, text = "Course", command = lambda:self.viewCourse("Habitable Planet"))
-        # self.courseButton.grid(row = 0, column = 3, padx = 20, pady = 20)
-        # #TEST STUFF
-
 
         Label(self.welcomeFrame, text = "Main Page").grid(row = 0, column = 1)
         Label(self.welcomeFrame, text = "Title").grid(row = 1, column = 0)
@@ -329,7 +320,7 @@ class cs4400Project:
             designationList = []
             for designation in aList:
                 designationList.append(designation[0])
-            designationList.insert(0,"Please Select")
+            designationList.insert(0,"")
             self.welcomeDesignationVar = StringVar()
             self.welcomeDesignationVar.set(designationList[0])
             designationOption = OptionMenu(self.welcomeFrame, self.welcomeDesignationVar, *designationList)
@@ -341,7 +332,7 @@ class cs4400Project:
             majorList = []
             for major in majorTuple:
                 majorList.append(major[0])
-            majorList.insert(0, "Please Select")
+            majorList.insert(0, "")
             self.welcomeMajorVar = StringVar()
             self.welcomeMajorVar.set(majorList[0])
             majorOption = OptionMenu(self.welcomeFrame, self.welcomeMajorVar, *majorList)
@@ -349,8 +340,8 @@ class cs4400Project:
 
             Label(self.welcomeFrame, text = "Year").grid(row = 4, column = 4)
             self.welcomeYearVar = StringVar()
-            self.welcomeYearVar.set("Please Select")
-            yearOption = OptionMenu(self.welcomeFrame, self.welcomeYearVar, "Please Select", "Freshman","Sophomore", "Junior","Senior")
+            self.welcomeYearVar.set("")
+            yearOption = OptionMenu(self.welcomeFrame, self.welcomeYearVar, "", "Freshman","Sophomore", "Junior","Senior")
             yearOption.grid(row = 4, column = 5,pady=6)
 
             self.filterRadio = StringVar()
@@ -1050,6 +1041,7 @@ class cs4400Project:
         backbFrame.pack()
 
         try:
+            print("here")
             #connect to database
             db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
                 passwd = "2KZtbzKa", db = "cs4400_Team_5")
@@ -1498,37 +1490,46 @@ class cs4400Project:
                                  passwd = "2KZtbzKa", db = "cs4400_Team_5")
             print("+")
             cursor = db.cursor()
+            cursor.execute("SELECT Name FROM PROJECT WHERE Name = %s;",(projectName,))
+            aList = cursor.fetchall()
+            print(aList)
             if(projectName != "" and advisorName != "" and advisorEmail != "" and description != "" and estNumOfStudents != ""):
-                print("none of the entry boxes are empty")
-                print(designation)
-                print(majorRestriction)
-                print(departmentRestriction)
-                statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
-                data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
-                cursor.execute(statement, data)
-                db.commit()
-                print("inserted project")
+                if(len(aList) == 0):
+                    print("none of the entry boxes are empty")
+                    print(designation)
+                    print(majorRestriction)
+                    print(departmentRestriction)
+                    statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
+                    data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
+                    cursor.execute(statement, data)
+                    db.commit()
+                    print("inserted project")
+                else:
+                    print("Project name already taken")
+                    return
             else:
                 messagebox.showerror(title = "Error",message = "No fields can be empty!")
                 print("no entry boxes can be empty")
                 return
             for category in categories:
-                print(category)
-                print('hello')
                 cursor.execute("INSERT INTO PROJECT_IS_CATEGORY (Name, Category_name) VALUES (%s, %s);", (projectName, category))
                 db.commit()
                 print("inserted category")
             if(majorRestriction != "No Requirement"):
                 print("major restriction does not equal")
-                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, majorRestriction))
+                restriction = majorRestriction + " students only"
+                print(restriction)
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, restriction))
                 db.commit()
                 print("inserted major requirement")
             if(yearRestriction != "No Requirement"):
-                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, yearRestriction))
+                restriction = yearRestriction + " only"
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, restriction))
                 db.commit()
                 print("inserted year requirement")
             if(departmentRestriction != "No Requirement"):
-                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, departmentRestriction))
+                restriction = departmentRestriction + " students only"
+                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, restriction))
                 db.commit()
                 print("inserted department restriction")
                 messagebox.showinfo(title = "Success",message = "You have submitted a project.")
