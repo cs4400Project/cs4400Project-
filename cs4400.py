@@ -547,11 +547,13 @@ class cs4400Project:
             for cat in categoryTuple:
                 categoryList += cat[0] + ", "
 
-            cursor.execute("SELECT B.Requirement FROM PROJECT A JOIN PROJECT_REQUIREMENT B ON A.Name = B.Name WHERE A.Name = '" + name + "';")
+            cursor.execute("SELECT B.Year_Requirement, B.Department_Requirement, B.Major_Requirement FROM PROJECT A JOIN PROJECT_REQUIREMENT B ON A.Name = B.Name WHERE A.Name = '" + name + "';")
             reqTuple = cursor.fetchall()
+            print(reqTuple)
             reqList = "";
-            for req in reqTuple:
-                reqList += req[0] + "; "
+            for req in reqTuple[0]:
+                if (req != None):
+                    reqList += req + "; "
 
             Label(self.viewProjectFrame, text = aList[0][0], background="gray", wraplength = 500, justify = LEFT).grid(row = 0, column= 0, padx = 25, pady = 5, sticky= W)
             Label(self.viewProjectFrame, text = aList[0][2] + " (" + aList[0][3] + ")", background="gray", wraplength = 500, justify = LEFT).grid(row = 1, column= 0, padx = 25, pady = 5, sticky= W)
