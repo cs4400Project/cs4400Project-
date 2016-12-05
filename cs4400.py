@@ -509,6 +509,7 @@ class cs4400Project:
             db.close()
 
         except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
             print ("Unexpected error:", sys.exc_info()[0])
 
     def backViewProject(self):
@@ -608,6 +609,7 @@ class cs4400Project:
             db.close()
 
         except:
+            messagebox.showerror(title = "Error",message = "You have already applied to this project.")
             print ("Unexpected error:", sys.exc_info()[0])
 
     def viewCourse(self, name):
@@ -663,6 +665,7 @@ class cs4400Project:
             db.close()
 
         except:
+            messagebox.showerror(title = "Error",message = "Could not connect to database.")
             print ("Unexpected error:", sys.exc_info()[0])
 
     def backViewCourse(self):
@@ -1479,40 +1482,44 @@ class cs4400Project:
                                  passwd = "2KZtbzKa", db = "cs4400_Team_5")
             print("+")
             cursor = db.cursor()
+            cursor.execute("SELECT Name FROM PROJECT WHERE Name = %s;",(projectName,))
+            aList = cursor.fetchall()
+            print(aList)
             if(projectName != "" and advisorName != "" and advisorEmail != "" and description != "" and estNumOfStudents != ""):
-                print("none of the entry boxes are empty")
-                print(designation)
-                print(majorRestriction)
-                print(departmentRestriction)
-                statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
-                data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
-                cursor.execute(statement, data)
-                db.commit()
-                print("inserted project")
+                if(len(aList) == 0):
+                    print("none of the entry boxes are empty")
+                    print(designation)
+                    print(majorRestriction)
+                    print(departmentRestriction)
+                    statement = "INSERT INTO PROJECT (Name, estNumOfStudents, aName, aEmail, Description, Designation) VALUES (%s,%s,%s,%s,%s,%s);"
+                    data = (projectName, estNumOfStudents, advisorName, advisorEmail, description, designation)
+                    cursor.execute(statement, data)
+                    db.commit()
+                    print("inserted project")
+                else:
+                    print("Project name already taken")
+                    return
             else:
-                messagebox.showerror(title = "Error",message = "No fields can be empty!")
                 print("no entry boxes can be empty")
                 return
             for category in categories:
-                print(category)
-                print('hello')
                 cursor.execute("INSERT INTO PROJECT_IS_CATEGORY (Name, Category_name) VALUES (%s, %s);", (projectName, category))
                 db.commit()
                 print("inserted category")
-            if(majorRestriction != "No Requirement"):
-                print("major restriction does not equal")
-                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, majorRestriction))
-                db.commit()
-                print("inserted major requirement")
-            if(yearRestriction != "No Requirement"):
-                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, yearRestriction))
-                db.commit()
-                print("inserted year requirement")
-            if(departmentRestriction != "No Requirement"):
-                cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Requirement) VALUES (%s, %s);", (projectName, departmentRestriction))
-                db.commit()
-                print("inserted department restriction")
-                messagebox.showinfo(title = "Success",message = "You have submitted a project.")
+
+
+            if(majorRestriction == "No Requirement"):
+                majorRestriction = None
+            if(yearRestriction == "No Requirement"):
+                yearRestriction = None
+            if(departmentRestriction == "No Requirement"):
+                departmentRestriction = None
+
+            cursor.execute("INSERT INTO PROJECT_REQUIREMENT (Name, Year_Requirement, Department_Requirement, Major_Requirement) VALUES (%s,%s,%s,%s);",(projectName, yearRestriction, departmentRestriction, majorRestriction))
+            db.commit()
+            print("inserted restirction")
+
+            messagebox.showinfo(title="Success", message = "Project has been added.")
 
             cursor.close()
             db.close()
