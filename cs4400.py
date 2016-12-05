@@ -479,11 +479,13 @@ class cs4400Project:
             for cat in categoryTuple:
                 categoryList += cat[0] + ", "
 
-            cursor.execute("SELECT B.Requirement FROM PROJECT A JOIN PROJECT_REQUIREMENT B ON A.Name = B.Name WHERE A.Name = '" + name + "';")
+            cursor.execute("SELECT B.Year_Requirement, B.Department_Requirement, B.Major_Requirement FROM PROJECT A JOIN PROJECT_REQUIREMENT B ON A.Name = B.Name WHERE A.Name = '" + name + "';")
             reqTuple = cursor.fetchall()
+            print(reqTuple)
             reqList = "";
-            for req in reqTuple:
-                reqList += req[0] + "; "
+            for req in reqTuple[0]:
+                if (req != None):
+                    reqList += req + "; "
 
             Label(self.viewProjectFrame, text = aList[0][0], background="gray", wraplength = 500, justify = LEFT).grid(row = 0, column= 0, padx = 25, pady = 5, sticky= W)
             Label(self.viewProjectFrame, text = aList[0][2] + " (" + aList[0][3] + ")", background="gray", wraplength = 500, justify = LEFT).grid(row = 1, column= 0, padx = 25, pady = 5, sticky= W)
@@ -517,100 +519,79 @@ class cs4400Project:
             print("connected")
 
             cursor = db.cursor()
+            cursor.execute("""SELECT COUNT(*) 
+                        FROM 
+                        (
+                          SELECT *
+                          FROM
+                          (
+                            SELECT A.Name, B.Year_Requirement
+                              FROM PROJECT_REQUIREMENT B 
+                              JOIN PROJECT A 
+                              ON A.Name = B.Name 
+                              WHERE A.Name = '""" + name +"""'
+                            ) A
+                            JOIN
+                            (
+                              SELECT A.Username, A.Year
+                              FROM USER A
+                              JOIN MAJOR B
+                              WHERE A.Major = B.Name
+                              AND A.Username =  '""" + self.currentUser +"""'
+                            ) B
+                              WHERE A.Year_Requirement IS NULL 
+                              OR A.Year_Requirement LIKE CONCAT(  '%', B.Year,  '%' )
+                        ) A
+                        NATURAL JOIN
+                        (
 
-            # cursor.execute("SELECT B.Requirement FROM PROJECT_REQUIREMENT B JOIN PROJECT A ON A.Name = B.Name WHERE A.Name = '" + name + "';")
-            # reqTupleTest = cursor.fetchall()
-            # reqListTest = [];
-            # for req in reqTupleTest:
-            #     reqListTest.append(req[0].replace("students only","").replace("s only","").replace("only", "").rstrip(" "))
-            # print (reqListTest)
+                          SELECT * 
+                          FROM (
+                            SELECT *
+                            FROM
+                            (
+                              SELECT A.Name, B.Major_Requirement
+                              FROM PROJECT_REQUIREMENT B 
+                              JOIN PROJECT A 
+                              ON A.Name = B.Name 
+                              WHERE A.Name = '""" + name +"""'
+                            ) A
+                            JOIN
+                            (
+                              SELECT A.Username, A.Major
+                              FROM USER A
+                              NATURAL JOIN MAJOR B
+                              WHERE A.Major = B.Name
+                              AND A.Username =  '""" + self.currentUser +"""'
+                            ) B
+                              WHERE A.Major_Requirement IS NULL 
+                              OR A.Major_Requirement LIKE CONCAT(  '%', B.Major,  '%' )
+                          ) A
+                          NATURAL JOIN (
+                            SELECT *
+                            FROM
+                            (
+                              SELECT A.Name, B.Department_Requirement
+                              FROM PROJECT_REQUIREMENT B 
+                              JOIN PROJECT A 
+                              ON A.Name = B.Name 
+                              WHERE A.Name = '""" + name +"""'
+                            ) A
+                            NATURAL JOIN
+                            (
+                              SELECT A.Username, B.Dept_name
+                              FROM USER A
+                              JOIN MAJOR B
+                              WHERE A.Major= B.Name
+                              AND A.Username =  '""" + self.currentUser +"""'
+                            ) B
+                              WHERE A.Department_Requirement IS NULL 
+                              OR A.Department_Requirement LIKE CONCAT(  '%', B.Dept_name,  '%' )
+                          )B 
+                        ) B""")
+            checkforReq = cursor.fetchall()
 
-            # cursor.execute("SELECT A.Year, A.Major, B.Dept_name FROM USER A JOIN MAJOR B WHERE A.Major = B.Name AND A.Username = '" + self.currentUser + "';")
-            # userTuple = cursor.fetchall()
-            # print (userTuple)
-            # if(len(userTuple) != 0):
-            #     userListTest = userTuple[0]
-            #     print (userListTest)
-
-            #     reqCount = 0
-
-            #     for x in reqListTest:
-            #         if x in userListTest:
-            #             reqCount += 1
-
-            #     print (len(reqListTest))
-            #     print (reqCount)
-
-
-                # cursor.execute("SELECT B.Requirement FROM PROJECT A JOIN PROJECT_REQUIREMENT B ON A.Name = B.Name WHERE A.Name = '" + name + "';")
-                # if (len(reqListTest) == reqCount):
-            #         date = datetime.datetime.now().strftime("%m/%d/%Y")
-            #         cursor.execute("INSERT INTO APPLY VALUES(%s, %s, %s, %s)", (self.currentUser, name, date, "Pending"))
-            #     else:
-            #         print("Does not meet Requirements")
-            # else:
-            #     print("Student has NULL field")
-
-
-            cursor.execute("""SELECT COUNT(*)
-                    FROM (
-                    SELECT *
-                    FROM PROJECT_REQUIREMENT
-                    WHERE NAME = 'Excel Peer Support Network') A
-                    WHERE REQUIREMENT LIKE '%Freshman%'
-                    OR REQUIREMENT LIKE '%Sophomore%'
-                    OR REQUIREMENT LIKE '%Junior%'
-                    OR REQUIREMENT LIKE '%Senior%'""")
-            checkforYearReq = cursor.fetchall()
-
-            passYear = True
-
-            if (checkforYearReq[0][0] > 0):
-                passYear = False
-                cursor.execute("""SELECT COUNT(*)
-                        FROM (SELECT B.* FROM PROJECT_REQUIREMENT B JOIN PROJECT A ON A.Name = B.Name WHERE A.Name = '""" + name +"""') A
-                        JOIN (
-                        SELECT A.Year FROM USER A JOIN MAJOR B WHERE A.Major = B.Name AND A.Username = '""" + self.currentUser +"""') B
-                        WHERE A.Requirement LIKE CONCAT('%', B.Year, '%')""")
-
-                yearCheck = cursor.fetchall()
-                if (yearCheck[0][0] > 0):
-                    passYear = True
-
-            cursor.execute(""" SELECT COUNT(*)
-                        FROM (
-                        SELECT *
-                        FROM PROJECT_REQUIREMENT
-                        WHERE NAME = '""" + name +"""') A
-                        WHERE REQUIREMENT LIKE '%%students%'""")
-            checkforMajorReq = cursor.fetchall()
-
-            passMajor = True
-            if (checkforMajorReq[0][0] > 0):
-                passMajor = False
-                cursor.execute("""SELECT COUNT( * )
-                        FROM (
-
-                        SELECT B . *
-                        FROM PROJECT_REQUIREMENT B
-                        JOIN PROJECT A ON A.Name = B.Name
-                        WHERE A.Name =  '""" + name +"""'
-                        )A
-                        JOIN (
-
-                        SELECT A.Major, B.Dept_name
-                        FROM USER A
-                        JOIN MAJOR B
-                        WHERE A.Major = B.Name
-                        AND A.Username =  '""" + self.currentUser +"""'
-                        )B
-                        WHERE A.Requirement LIKE CONCAT(  '%', B.Dept_name,  '%' )
-                        OR A.Requirement LIKE CONCAT(  '%', B.Major,  '%' )""")
-                majorCheck = cursor.fetchall()
-                if (majorCheck[0][0] > 0):
-                    passMajor = True
-
-            if (passYear and passMajor):
+            if (checkforReq[0][0] > 0):
                 date = datetime.datetime.now().strftime("%m/%d/%Y")
                 cursor.execute("INSERT INTO APPLY VALUES(%s, %s, %s, %s)", (self.currentUser, name, date, "Pending"))
             else:
