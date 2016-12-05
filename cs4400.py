@@ -280,11 +280,11 @@ class cs4400Project:
         self.meButton.grid(row = 0, column = 0, padx = 20, pady = 20)
 
         # #TEST STUFF
-        # self.projectButton = Button(self.welcomeFrame, text = "Project", command = lambda:self.viewProject("Excel Peer Support Network"))
-        # self.projectButton.grid(row = 0, column = 2, padx = 20, pady = 20)
-
-        # self.courseButton = Button(self.welcomeFrame, text = "Course", command = lambda:self.viewCourse("Habitable Planet"))
-        # self.courseButton.grid(row = 0, column = 3, padx = 20, pady = 20)
+####        self.projectButton = Button(self.welcomeFrame, text = "Project", command = lambda:self.viewProject("Excel Peer Support Network"))
+####        self.projectButton.grid(row = 0, column = 2, padx = 20, pady = 20)
+####
+####        self.courseButton = Button(self.welcomeFrame, text = "Course", command = lambda:self.viewCourse("Habitable Planet"))
+####        self.courseButton.grid(row = 0, column = 3, padx = 20, pady = 20)
         # #TEST STUFF
 
 
@@ -373,7 +373,11 @@ class cs4400Project:
             self.typeBox = Listbox(tableFrame, yscrollcommand=scrollbar.set)
 
             self.nameBox.insert(0,"NAME")
+            self.nameBox.insert(END, "Excel Peer Support Network")
             self.typeBox.insert(0,"TYPE")
+            self.nameBox.insert(END, "Habitable Planet")
+            self.typeBox.insert(END, "Project")
+            self.typeBox.insert(END, "Course")
             self.nameBox.pack(side = LEFT, fill = BOTH)
             self.typeBox.pack(side = LEFT, fill = BOTH)
 
@@ -388,6 +392,8 @@ class cs4400Project:
             bottomFrame = Frame(self.welcomeWin)
             bottomFrame.pack()
 
+            self.viewButton = Button(bottomFrame, text = "View", command = self.viewElement)
+            self.viewButton.grid(row = 0, column = 1, padx = 20, pady = 20)
             self.logoutButton = Button(bottomFrame, text = "Log Out", command = self.logoutMe)
             self.logoutButton.grid(row = 0, column = 0, padx = 20, pady = 20)
 
@@ -419,6 +425,15 @@ class cs4400Project:
         self.numOfCategories = 1
             
         self.radio1.select()
+
+    def viewElement(self):
+        now = self.nameBox.curselection()
+        nameOfElement = self.nameBox.get(now)
+        typeOfElement = self.typeBox.get(now)
+        if(typeOfElement == "Project"):
+            self.viewProject(nameOfElement)
+        else:
+            self.viewCourse(nameOfElement)
         
     def logoutMe(self):
         self.welcomeWin.withdraw()
