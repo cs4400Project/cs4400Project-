@@ -4,6 +4,7 @@ from re import findall
 import urllib.request
 import re
 import base64
+import datetime
 
 
 
@@ -280,11 +281,11 @@ class cs4400Project:
         self.meButton.grid(row = 0, column = 0, padx = 20, pady = 20)
 
         # #TEST STUFF
-####        self.projectButton = Button(self.welcomeFrame, text = "Project", command = lambda:self.viewProject("Excel Peer Support Network"))
-####        self.projectButton.grid(row = 0, column = 2, padx = 20, pady = 20)
-####
-####        self.courseButton = Button(self.welcomeFrame, text = "Course", command = lambda:self.viewCourse("Habitable Planet"))
-####        self.courseButton.grid(row = 0, column = 3, padx = 20, pady = 20)
+        # self.projectButton = Button(self.welcomeFrame, text = "Project", command = lambda:self.viewProject("Excel Peer Support Network"))
+        # self.projectButton.grid(row = 0, column = 2, padx = 20, pady = 20)
+
+        # self.courseButton = Button(self.welcomeFrame, text = "Course", command = lambda:self.viewCourse("Habitable Planet"))
+        # self.courseButton.grid(row = 0, column = 3, padx = 20, pady = 20)
         # #TEST STUFF
 
 
@@ -434,7 +435,7 @@ class cs4400Project:
             self.viewProject(nameOfElement)
         else:
             self.viewCourse(nameOfElement)
-        
+
     def logoutMe(self):
         self.welcomeWin.withdraw()
         self.rootwin.iconify()
@@ -517,38 +518,104 @@ class cs4400Project:
 
             cursor = db.cursor()
 
-            cursor.execute("SELECT B.Requirement FROM PROJECT_REQUIREMENT B JOIN PROJECT A ON A.Name = B.Name WHERE A.Name = '" + name + "';")
-            reqTupleTest = cursor.fetchall()
-            reqListTest = [];
-            for req in reqTupleTest:
-                reqListTest.append(req[0].replace("students only","").replace("s only","").replace("only", "").rstrip(" "))
-            print (reqListTest)
+            # cursor.execute("SELECT B.Requirement FROM PROJECT_REQUIREMENT B JOIN PROJECT A ON A.Name = B.Name WHERE A.Name = '" + name + "';")
+            # reqTupleTest = cursor.fetchall()
+            # reqListTest = [];
+            # for req in reqTupleTest:
+            #     reqListTest.append(req[0].replace("students only","").replace("s only","").replace("only", "").rstrip(" "))
+            # print (reqListTest)
 
-            cursor.execute("SELECT A.Year, A.Major, B.Dept_name FROM USER A JOIN MAJOR B WHERE A.Major = B.Name AND A.Username = '" + self.currentUser + "';")
-            userTuple = cursor.fetchall()
-            print (userTuple)
-            if(len(userTuple) != 0):
-                userListTest = userTuple[0]
-                print (userListTest)
+            # cursor.execute("SELECT A.Year, A.Major, B.Dept_name FROM USER A JOIN MAJOR B WHERE A.Major = B.Name AND A.Username = '" + self.currentUser + "';")
+            # userTuple = cursor.fetchall()
+            # print (userTuple)
+            # if(len(userTuple) != 0):
+            #     userListTest = userTuple[0]
+            #     print (userListTest)
 
-                reqCount = 0
+            #     reqCount = 0
 
-                for x in reqListTest:
-                    if x in userListTest:
-                        reqCount += 1
+            #     for x in reqListTest:
+            #         if x in userListTest:
+            #             reqCount += 1
 
-                print (len(reqListTest))
-                print (reqCount)
+            #     print (len(reqListTest))
+            #     print (reqCount)
 
 
                 # cursor.execute("SELECT B.Requirement FROM PROJECT A JOIN PROJECT_REQUIREMENT B ON A.Name = B.Name WHERE A.Name = '" + name + "';")
-                if (len(reqListTest) == reqCount):
-                    date = datetime.datetime.now().strftime("%m/%d/%Y")
-                    cursor.execute("INSERT INTO APPLY VALUES(%s, %s, %s, %s)", (self.currentUser, name, date, "Pending"))
-                else:
-                    print("Does not meet Requirements")
+                # if (len(reqListTest) == reqCount):
+            #         date = datetime.datetime.now().strftime("%m/%d/%Y")
+            #         cursor.execute("INSERT INTO APPLY VALUES(%s, %s, %s, %s)", (self.currentUser, name, date, "Pending"))
+            #     else:
+            #         print("Does not meet Requirements")
+            # else:
+            #     print("Student has NULL field")
+
+
+            cursor.execute("""SELECT COUNT(*)
+                    FROM (
+                    SELECT *
+                    FROM PROJECT_REQUIREMENT
+                    WHERE NAME = 'Excel Peer Support Network') A
+                    WHERE REQUIREMENT LIKE '%Freshman%'
+                    OR REQUIREMENT LIKE '%Sophomore%'
+                    OR REQUIREMENT LIKE '%Junior%'
+                    OR REQUIREMENT LIKE '%Senior%'""")
+            checkforYearReq = cursor.fetchall()
+
+            passYear = True
+
+            if (checkforYearReq[0][0] > 0):
+                passYear = False
+                cursor.execute("""SELECT COUNT(*)
+                        FROM (SELECT B.* FROM PROJECT_REQUIREMENT B JOIN PROJECT A ON A.Name = B.Name WHERE A.Name = '""" + name +"""') A
+                        JOIN (
+                        SELECT A.Year FROM USER A JOIN MAJOR B WHERE A.Major = B.Name AND A.Username = '""" + self.currentUser +"""') B
+                        WHERE A.Requirement LIKE CONCAT('%', B.Year, '%')""")
+
+                yearCheck = cursor.fetchall()
+                if (yearCheck[0][0] > 0):
+                    passYear = True
+
+            cursor.execute(""" SELECT COUNT(*)
+                        FROM (
+                        SELECT *
+                        FROM PROJECT_REQUIREMENT
+                        WHERE NAME = '""" + name +"""') A
+                        WHERE REQUIREMENT LIKE '%%students%'""")
+            checkforMajorReq = cursor.fetchall()
+
+            passMajor = True
+            if (checkforMajorReq[0][0] > 0):
+                passMajor = False
+                cursor.execute("""SELECT COUNT( * )
+                        FROM (
+
+                        SELECT B . *
+                        FROM PROJECT_REQUIREMENT B
+                        JOIN PROJECT A ON A.Name = B.Name
+                        WHERE A.Name =  '""" + name +"""'
+                        )A
+                        JOIN (
+
+                        SELECT A.Major, B.Dept_name
+                        FROM USER A
+                        JOIN MAJOR B
+                        WHERE A.Major = B.Name
+                        AND A.Username =  '""" + self.currentUser +"""'
+                        )B
+                        WHERE A.Requirement LIKE CONCAT(  '%', B.Dept_name,  '%' )
+                        OR A.Requirement LIKE CONCAT(  '%', B.Major,  '%' )""")
+                majorCheck = cursor.fetchall()
+                if (majorCheck[0][0] > 0):
+                    passMajor = True
+
+            if (passYear and passMajor):
+                date = datetime.datetime.now().strftime("%m/%d/%Y")
+                cursor.execute("INSERT INTO APPLY VALUES(%s, %s, %s, %s)", (self.currentUser, name, date, "Pending"))
             else:
-                print("Student has NULL field")
+                print("Doesn't meet requirements")
+
 
             cursor.close()
             db.close()
@@ -1141,6 +1208,7 @@ class cs4400Project:
         projectName = self.listbox.get(now)
         status = self.listbox4.get(now)
         print(projectName,status)
+        #lol
         try:
         #connect to database
             db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
