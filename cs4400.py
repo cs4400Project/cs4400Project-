@@ -298,7 +298,7 @@ class cs4400Project:
             self.categoryList = []
             for category in aList:
                 self.categoryList.append(category[0])
-            self.categoryList.insert(0,"Please Select")
+            self.categoryList.insert(0,"")
             print("populated my category list")
             self.categorySelection = StringVar()
             print("made my var")
@@ -399,6 +399,8 @@ class cs4400Project:
         self.optionMenus[len(self.optionMenus)-1].grid(row = 2, column = self.numOfCategories)
 
     def applyFilter(self):
+        self.nameBox.delete(0,END)
+        self.typeBox.delete(0,END)
         try:
         #connect to database
             db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_Team_5",
@@ -408,21 +410,20 @@ class cs4400Project:
             filterCategories = []
             for k in self.categories:
                 filterCategories.append(k.get())
-            categoryStatement = "sub.Category_name = '" + filterCategories[0] + "'"
+            categoryStatement = "sub.Category_name LIKE '" + filterCategories[0] + "%'"
             x = len(filterCategories)
             print(x)
             for i in range(1, x):
                 if(filterCategories[i] != "Please Select"):
-                    categoryStatement += " OR sub.Category_name = '" + filterCategories[i] + "'"
+                    categoryStatement += " OR sub.Category_name LIKE '" + filterCategories[i] + "%'"
             for j in filterCategories:
                 if(j == "Please Select"):
                     filterCategories.remove(j)
 
-            #categoryStatement = categoryStatement[:len(categoryStatement)-1]
             categoryStatement += ";"
             print(self.filterRadio.get())
             if(self.filterRadio.get() == "Project"):
-                statement = "SELECT Name FROM (SELECT * FROM PROJECT NATURAL JOIN PROJECT_REQUIREMENT NATURAL JOIN PROJECT_IS_CATEGORY)sub WHERE (sub.Designation LIKE '" + self.welcomeDesignationVar.get()+ "%' OR ISNULL(sub.Designation)) AND (sub.Year_Requirement LIKE '" +self.welcomeYearVar.get()+ "%' OR ISNULL(sub.Year_Requirement)) AND (sub.Major_Requirement LIKE '" +self.welcomeMajorVar.get()+"%' OR ISNULL(sub.Major_Requirement)) AND "
+                statement = "SELECT Name FROM (SELECT * FROM PROJECT NATURAL JOIN PROJECT_REQUIREMENT NATURAL JOIN PROJECT_IS_CATEGORY)sub WHERE sub.Name LIKE '%"+self.welcomeTitleEntry.get()+"%' AND (sub.Designation LIKE '" + self.welcomeDesignationVar.get()+ "%' OR ISNULL(sub.Designation)) AND (sub.Year_Requirement LIKE '" +self.welcomeYearVar.get()+ "%' OR ISNULL(sub.Year_Requirement)) AND (sub.Major_Requirement LIKE '" +self.welcomeMajorVar.get()+"%' OR ISNULL(sub.Major_Requirement)) AND "
                 statement += categoryStatement
                 print(statement)
                 cursor.execute(statement)
@@ -431,11 +432,13 @@ class cs4400Project:
                 nameList=[]
                 for i in aList:
                     nameList.append(i[0])
+                nameList.sort(key=str.lower)
+                nameList = set(nameList)
                 for j in nameList:
                     self.nameBox.insert(END, j)
                     self.typeBox.insert(END, "Project")
             elif(self.filterRadio.get() == "Course"):
-                statement = "SELECT Name FROM (SELECT * FROM COURSE NATURAL JOIN COURSE_IS_CATEGORY)sub WHERE "
+                statement = "SELECT Name FROM (SELECT * FROM COURSE NATURAL JOIN COURSE_IS_CATEGORY)sub WHERE sub.Name LIKE '%"+self.welcomeTitleEntry.get()+"%' AND "
                 statement += categoryStatement
                 print(statement)
                 cursor.execute(statement)
@@ -444,13 +447,15 @@ class cs4400Project:
                 nameList=[]
                 for i in aList:
                     nameList.append(i[0])
+                nameList.sort(key=str.lower)
+                nameList = set(nameList)
                 for j in nameList:
                     self.nameBox.insert(END, j)
                     self.typeBox.insert(END, "Course")
             else:
                 print("here")
-                projectStatement = "SELECT Name FROM (SELECT * FROM PROJECT NATURAL JOIN PROJECT_REQUIREMENT NATURAL JOIN PROJECT_IS_CATEGORY)sub WHERE (sub.Designation LIKE '" + self.welcomeDesignationVar.get()+ "%' OR ISNULL(sub.Designation)) AND (sub.Year_Requirement LIKE '" +self.welcomeYearVar.get()+ "%' OR ISNULL(sub.Year_Requirement)) AND (sub.Major_Requirement LIKE '" +self.welcomeMajorVar.get()+"%' OR ISNULL(sub.Major_Requirement)) AND " 
-                courseStatement = "SELECT Name FROM (SELECT * FROM COURSE NATURAL JOIN COURSE_IS_CATEGORY)sub WHERE "
+                projectStatement = "SELECT Name FROM (SELECT * FROM PROJECT NATURAL JOIN PROJECT_REQUIREMENT NATURAL JOIN PROJECT_IS_CATEGORY)sub WHERE sub.Name LIKE '%"+self.welcomeTitleEntry.get()+"%' AND (sub.Designation LIKE '" + self.welcomeDesignationVar.get()+ "%' OR ISNULL(sub.Designation)) AND (sub.Year_Requirement LIKE '" +self.welcomeYearVar.get()+ "%' OR ISNULL(sub.Year_Requirement)) AND (sub.Major_Requirement LIKE '" +self.welcomeMajorVar.get()+"%' OR ISNULL(sub.Major_Requirement)) AND "
+                courseStatement = "SELECT Name FROM (SELECT * FROM COURSE NATURAL JOIN COURSE_IS_CATEGORY)sub WHERE sub.Name LIKE '%"+self.welcomeTitleEntry.get()+"%' AND "
                 projectStatement += categoryStatement
                 courseStatement += categoryStatement
                 print(projectStatement)
@@ -458,20 +463,24 @@ class cs4400Project:
                 cursor.execute(projectStatement)
                 aList = cursor.fetchall()
                 print("executed statement")
+                nameDict = {}
                 nameList=[]
                 for i in aList:
                     nameList.append(i[0])
-                for j in nameList:
-                    self.nameBox.insert(END, j)
-                    self.typeBox.insert(END, "Project")
+                    nameDict[i[0]] = "Project"
+                print("sorted name list")
                 typeList=[]
                 cursor.execute(courseStatement)
                 bList = cursor.fetchall()
                 for k in bList:
                     typeList.append(k[0])
-                for l in typeList:
-                    self.nameBox.insert(END, j)
-                    self.typeBox.insert(END, "Course")
+                    nameDict[k[0]] = "Course"
+                newList = nameList + typeList
+                newList.sort(key = str.lower)
+                newList = set(newList)
+                for l in newList:
+                    self.nameBox.insert(END, l)
+                    self.typeBox.insert(END, nameDict[l])
 
             cursor.close()
             db.close()
@@ -497,7 +506,6 @@ class cs4400Project:
     def viewElement(self):
         now = self.nameBox.curselection()
         nameOfElement = self.nameBox.get(now)
-        print(nameOfElement)
         typeOfElement = self.typeBox.get(now)
         if(typeOfElement == "Project"):
             self.viewProject(nameOfElement)
